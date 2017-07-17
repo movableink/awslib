@@ -6,10 +6,15 @@ module MovableInk
       raise "Can only be used within EC2" unless instance_id
     end
 
-    def backoff
+    def run_with_backoff
       9.times do |num|
-        yield num+1
+        begin
+          return yield
+        rescue Aws::EC2::Errors::RequestLimitExceeded
+          notify_and_sleep(num**2 + rand(10))
+        end
       end
+      nil
     end
 
     def regions
@@ -62,9 +67,8 @@ module MovableInk
     end
 
     def load_mi_env
-      backoff do |number|
-        begin
-          mi_env = ec2.describe_tags({:filters =>
+      run_with_backoff do
+        ec2.describe_tags({:filters =>
                         [{:name =>'resource-id',
                           :values => [instance_id]
                         }]
@@ -72,22 +76,16 @@ module MovableInk
                       .tags
                       .detect { |tag| tag.key == 'mi:env' }
                       .value
-          return mi_env
-        rescue Aws::EC2::Errors::RequestLimitExceeded
-          notify_and_sleep(number**2 + rand((1..10)))
         end
       end
-      mi_env
-    end
 
     def thopter_instance
       @thopter_instance ||= load_thopter_instance
     end
 
     def load_thopter_instance
-      backoff do |number|
-        begin
-          return Aws::EC2::Client.new(region: 'us-east-1')
+      run_with_backoff do
+        Aws::EC2::Client.new(region: 'us-east-1')
                                   .describe_instances(filters: [
                                     {
                                       name: 'tag:mi:roles',
@@ -105,9 +103,6 @@ module MovableInk
                                   .reservations
                                   .map { |r| r.instances }
                                   .flatten
-        rescue Aws::EC2::Errors::RequestLimitExceeded
-          notify_and_sleep(number**2 + rand((1..10)))
-        end
       end
     end
 
@@ -116,8 +111,7 @@ module MovableInk
     end
 
     def load_all_instances
-      backoff do |number|
-        begin
+      run_with_backoff do
           resp = ec2.describe_instances(filters: [{
                                           name: 'instance-state-name',
                                           values: ['running']
@@ -132,10 +126,7 @@ module MovableInk
             resp = resp.next_page
             reservations += resp.reservations
           end
-          return reservations.map { |r| r.instances }.flatten
-        rescue Aws::EC2::Errors::RequestLimitExceeded
-          notify_and_sleep(number**2 + rand((1..10)))
-        end
+        reservations.map { |r| r.instances }.flatten
       end
     end
 
