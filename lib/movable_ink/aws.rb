@@ -50,6 +50,10 @@ module MovableInk
       @sns_client ||= Aws::SNS::Client.new(region: region)
     end
 
+    def autoscaling
+      @autoscaling_client ||= Aws::Autoscaling::Client.new(region: region)
+    end
+
     def sns_slack_topic_arn
       sns.list_topics.topics.select {|topic| topic.topic_arn.include? "slack-aws-alerts"}
           .first.topic_arn
@@ -69,15 +73,15 @@ module MovableInk
     def load_mi_env
       run_with_backoff do
         ec2.describe_tags({:filters =>
-                        [{:name =>'resource-id',
-                          :values => [instance_id]
-                        }]
-                      })
-                      .tags
-                      .detect { |tag| tag.key == 'mi:env' }
-                      .value
-        end
+              [{:name =>'resource-id',
+                :values => [instance_id]
+              }]
+            })
+           .tags
+           .detect { |tag| tag.key == 'mi:env' }
+           .value
       end
+    end
 
     def thopter_instance
       @thopter_instance ||= load_thopter_instance
@@ -86,23 +90,23 @@ module MovableInk
     def load_thopter_instance
       run_with_backoff do
         Aws::EC2::Client.new(region: 'us-east-1')
-                                  .describe_instances(filters: [
-                                    {
-                                      name: 'tag:mi:roles',
-                                      values: ['*thopter*']
-                                    },
-                                    {
-                                      name: 'tag:mi:env',
-                                      values: [mi_env]
-                                    },
-                                    {
-                                      name: 'instance-state-name',
-                                      values: ['running']
-                                    }
-                                  ])
-                                  .reservations
-                                  .map { |r| r.instances }
-                                  .flatten
+          .describe_instances(filters: [
+            {
+              name: 'tag:mi:roles',
+              values: ['*thopter*']
+            },
+            {
+              name: 'tag:mi:env',
+              values: [mi_env]
+            },
+            {
+              name: 'instance-state-name',
+              values: ['running']
+            }
+          ])
+          .reservations
+          .map { |r| r.instances }
+          .flatten
       end
     end
 
@@ -112,20 +116,20 @@ module MovableInk
 
     def load_all_instances
       run_with_backoff do
-          resp = ec2.describe_instances(filters: [{
-                                          name: 'instance-state-name',
-                                          values: ['running']
-                                        },
-                                        {
-                                          name: 'tag:mi:env',
-                                          values: [mi_env]
-                                        }
-                                      ])
-          reservations = resp.reservations
-          while (!resp.last_page?) do
-            resp = resp.next_page
-            reservations += resp.reservations
-          end
+        resp = ec2.describe_instances(filters: [{
+                                        name: 'instance-state-name',
+                                        values: ['running']
+                                      },
+                                      {
+                                        name: 'tag:mi:env',
+                                        values: [mi_env]
+                                      }
+                                    ])
+        reservations = resp.reservations
+        while (!resp.last_page?) do
+          resp = resp.next_page
+          reservations += resp.reservations
+        end
         reservations.map { |r| r.instances }.flatten
       end
     end
@@ -177,6 +181,30 @@ module MovableInk
         .inject([]) { |redii, instance|
           redii.push({"host" => instance, "port" => port})
         }
+    end
+
+    def mark_me_as_unhealthy
+      run_with_backoff do
+        autoscaling.set_instance_health({
+          health_status: "Unhealthy",
+          instance_id: instance_id,
+          should_respect_grace_period: false
+        })
+      end
+    end
+
+    def mark_me_as_healthy(role:)
+      run_with_backoff do
+        ec2.create_tags({
+          resources: [instance_id],
+          tags: [
+            {
+              key: "mi:roles",
+              value: role
+            }
+          ]
+        })
+      end
     end
   end
 end
