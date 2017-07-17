@@ -4,6 +4,10 @@
 
 `gem build MovableInkAWS.gemspec`
 
+## "Publishing"
+
+`s3cmd put -P MovableInkAWS-<VERSION>.gem s3://movableink-chef/MovableInkAWS/`
+
 ## Installing
 
 `gem install ./MovableInkAWS-<VERSION>.gem`
