@@ -54,6 +54,10 @@ module MovableInk
       @autoscaling_client ||= Aws::Autoscaling::Client.new(region: region)
     end
 
+    def s3
+      @s3_client ||= Aws::S3::Client.new(region: 'us-east-1')
+    end
+
     def sns_slack_topic_arn
       sns.list_topics.topics.select {|topic| topic.topic_arn.include? "slack-aws-alerts"}
           .first.topic_arn
@@ -64,6 +68,11 @@ module MovableInk
       sns.publish(:topic_arn => sns_slack_topic_arn, :message => message, :subject => "API Throttled")
       puts "Throttled by AWS.  Sleeping #{seconds} seconds."
       sleep seconds
+    end
+
+    def notify_nsq_can_not_be_drained
+      message = "Unable to drain nsq on instance #{instance_id}"
+      sns.publish(:topic_arn => sns_slack_topic_arn, :message => message, :subject => "Nsq not drained")
     end
 
     def mi_env
@@ -203,6 +212,76 @@ module MovableInk
               value: role
             }
           ]
+        })
+      end
+    end
+
+    def delete_role_tag(role:)
+      run_with_backoff do
+        ec2.delete_tags({
+          resources: [instance_id],
+          tags: [
+            {
+              key: "mi:roles",
+              value: role
+            }
+          ]
+        })
+      end
+    end
+
+    def complete_lifecycle_action(hook_name:, group_name:, token:)
+      run_with_backoff do
+        autoscaling.complete_lifecycle_action({
+          lifecycle_hook_name:     hook_name,
+          auto_scaling_group_name: group_name,
+          lifecycle_action_token:  token,
+          lifecycle_action_result: 'CONTINUE'
+        })
+      end
+    end
+
+    def record_lifecycle_action_heartbeat(hook_name:, group_name:)
+      run_with_backoff do
+        autoscaling.record_lifecycle_action_heartbeat({
+          lifecycle_hook_name:     hook_name,
+          auto_scaling_group_name: group_name
+        })
+      end
+    end
+
+    def elastic_ips
+      @all_elastic_ips ||= load_all_elastic_ips
+    end
+
+    def load_all_elastic_ips
+      run_with_backoff do
+        resp = ec2.describe_addresses
+        addresses = resp.addresses
+        while (!resp.last_page?) do
+          resp = resp.next_page
+          addresses += resp.addresses
+        end
+        addresses
+      end
+    end
+
+    def unassigned_elastic_ips
+      @unassigned_elastic_ips ||= elastic_ips.select { |address| address.association_id.nil? }
+    end
+
+    def available_elastic_ips
+      @available_elastic_ips ||= s3.get_object({bucket: 'movableink-chef', key: 'reserved_ips.json'}).body
+                                  .map { |line| JSON.parse(line) }
+                                  .select { |ip| ip["datacenter"] == datacenter && ip["role"] == 'cors_proxy'}
+                                  .select { |ip| unassigned_elastic_ips.map(&:allocation_id).include?(ip["allocation_id"]) }
+    end
+
+    def assign_ip_address
+      run_with_backoff do
+        ec2.associate_address({
+          instance_id: instance_id,
+          allocation_id: available_elastic_ips.sample["allocation_id"]
         })
       end
     end
