@@ -64,15 +64,22 @@ module MovableInk
     end
 
     def notify_and_sleep(seconds)
-      message = "Instance Id #{instance_id} has been throttled in #{region}."
-      sns.publish(:topic_arn => sns_slack_topic_arn, :message => message, :subject => "API Throttled")
-      puts "Throttled by AWS.  Sleeping #{seconds} seconds."
+      message = "Throttled by AWS. Sleeping #{seconds} seconds"
+      notify_slack(subject: 'API Throttled',
+                   message: message)
+      puts message
       sleep seconds
     end
 
     def notify_nsq_can_not_be_drained
-      message = "Unable to drain nsq on instance #{instance_id}"
-      sns.publish(:topic_arn => sns_slack_topic_arn, :message => message, :subject => "Nsq not drained")
+      notify_slack(subject: 'NSQ not drained',
+                   message: 'Unable to drain NSQ')
+    end
+
+    def notify_slack(subject:, message:)
+      sns.publish(topic_arn: sns_slack_topic_arn,
+                  subject: "#{subject} (#{instance_id}, #{region})"
+                  message: message)
     end
 
     def mi_env
@@ -125,15 +132,16 @@ module MovableInk
 
     def load_all_instances
       run_with_backoff do
-        resp = ec2.describe_instances(filters: [{
-                                        name: 'instance-state-name',
-                                        values: ['running']
-                                      },
-                                      {
-                                        name: 'tag:mi:env',
-                                        values: [mi_env]
-                                      }
-                                    ])
+        resp = ec2.describe_instances(filters: [
+                                        {
+                                          name: 'instance-state-name',
+                                          values: ['running']
+                                        },
+                                        {
+                                          name: 'tag:mi:env',
+                                          values: [mi_env]
+                                        }
+                                      ])
         reservations = resp.reservations
         while (!resp.last_page?) do
           resp = resp.next_page
