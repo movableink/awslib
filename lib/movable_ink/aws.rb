@@ -137,8 +137,10 @@ module MovableInk
       @all_instances[region] ||= load_all_instances(region, no_filter: no_filter)
     end
 
-    def load_all_instances(region, no_filter: no_filter)
+    def load_all_instances(region, no_filter: false)
       filters = if no_filter
+        nil
+      else
         [{
           name: 'instance-state-name',
           values: ['running']
@@ -147,8 +149,6 @@ module MovableInk
           name: 'tag:mi:env',
           values: [mi_env]
         }]
-      else
-        nil
       end
       run_with_backoff do
         resp = ec2(region: region).describe_instances(filters: filters)
