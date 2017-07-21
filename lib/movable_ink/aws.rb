@@ -10,8 +10,9 @@ module MovableInk
       9.times do |num|
         begin
           return yield
-        rescue Aws::EC2::Errors::RequestLimitExceeded
-          notify_and_sleep(num**2 + rand(10))
+        rescue Aws::EC2::Errors::RequestLimitExceeded,
+               Aws::Route53::Errors::ThrottlingException
+          notify_and_sleep(num**2 + rand(10), $!.class)
         end
       end
       nil
@@ -65,13 +66,17 @@ module MovableInk
       @s3_client ||= Aws::S3::Client.new(region: 'us-east-1')
     end
 
+    def route53
+      @route53_client ||= Aws::Route53::Client.new(region: 'us-east-1')
+    end
+
     def sns_slack_topic_arn
       sns.list_topics.topics.select {|topic| topic.topic_arn.include? "slack-aws-alerts"}
           .first.topic_arn
     end
 
-    def notify_and_sleep(seconds)
-      message = "Throttled by AWS. Sleeping #{seconds} seconds"
+    def notify_and_sleep(seconds, error_class)
+      message = "Throttled by AWS. Sleeping #{seconds} seconds, (#{error_class})"
       notify_slack(subject: 'API Throttled',
                    message: message)
       puts message
@@ -301,6 +306,26 @@ module MovableInk
           instance_id: instance_id,
           allocation_id: available_elastic_ips.sample["allocation_id"]
         })
+      end
+    end
+
+    def list_all_r53_resource_record_sets(hosted_zone_id)
+      run_with_backoff do
+        resp = route53.list_resource_record_sets({
+          hosted_zone_id: hosted_zone_id
+        })
+
+        resource_record_sets = resp.resource_record_sets
+        while (resp.is_truncated) do
+          resp = route53.list_resource_record_sets({
+            hosted_zone_id: hosted_zone_id,
+            start_record_type: resp.next_record_type,
+            start_record_name: resp.next_record_name
+          })
+          resource_record_sets += resp.resource_record_sets
+        end
+
+        resource_record_sets
       end
     end
   end
