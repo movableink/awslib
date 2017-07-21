@@ -11,6 +11,9 @@ module MovableInk
         begin
           return yield
         rescue Aws::EC2::Errors::RequestLimitExceeded,
+               Aws::SNS::Errors::ThrottledException,
+               Aws::AutoScaling::Errors::ThrottledException,
+               Aws::S3::Errors::SlowDown,
                Aws::Route53::Errors::ThrottlingException
           notify_and_sleep(num**2 + rand(10), $!.class)
         end
@@ -59,7 +62,7 @@ module MovableInk
 
     def autoscaling(region: my_region)
       @autoscaling_client ||= {}
-      @autoscaling_client[region] ||= Aws::Autoscaling::Client.new(region: region)
+      @autoscaling_client[region] ||= Aws::AutoScaling::Client.new(region: region)
     end
 
     def s3
