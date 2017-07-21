@@ -74,8 +74,10 @@ module MovableInk
     end
 
     def sns_slack_topic_arn
-      sns.list_topics.topics.select {|topic| topic.topic_arn.include? "slack-aws-alerts"}
-          .first.topic_arn
+      run_with_backoff do
+        sns.list_topics.topics.select {|topic| topic.topic_arn.include? "slack-aws-alerts"}
+           .first.topic_arn
+      end
     end
 
     def notify_and_sleep(seconds, error_class)
@@ -92,9 +94,11 @@ module MovableInk
     end
 
     def notify_slack(subject:, message:)
-      sns.publish(topic_arn: sns_slack_topic_arn,
-                  subject: "#{subject} (#{instance_id}, #{my_region})",
-                  message: message)
+      run_with_backoff do
+        sns.publish(topic_arn: sns_slack_topic_arn,
+                    subject: "#{subject} (#{instance_id}, #{my_region})",
+                    message: message)
+      end
     end
 
     def mi_env
