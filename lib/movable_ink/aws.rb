@@ -2,8 +2,8 @@ require 'aws-sdk'
 
 module MovableInk
   class AWS
-    def initialize
-      raise "Can only be used within EC2" unless instance_id
+    def initialize(environment: nil)
+      @mi_env = environment
     end
 
     def run_with_backoff
@@ -26,32 +26,39 @@ module MovableInk
       }
     end
 
-    def availability_zone
-      @availability_zone ||= `ec2metadata --availability-zone`.chomp rescue nil
+    def ec2_required
+      raise("Can only be used in EC2")
     end
 
-    def region
-      @region ||= availability_zone.chop
+    def availability_zone
+      @availability_zone ||= `ec2metadata --availability-zone`.chomp rescue ec2_required
+    end
+
+    def my_region
+      @my_region ||= availability_zone.chop
     end
 
     def instance_id
-      @instance_id ||= `ec2metadata --instance-id`.chomp rescue nil
+      @instance_id ||= `ec2metadata --instance-id`.chomp rescue ec2_required
     end
 
-    def datacenter
+    def datacenter(region: my_region)
       regions.key(region)
     end
 
-    def ec2
-      @ec2_client ||= Aws::EC2::Client.new(region: region)
+    def ec2(region: my_region)
+      @ec2_client ||= {}
+      @ec2_client[region] ||= Aws::EC2::Client.new(region: region)
     end
 
-    def sns
-      @sns_client ||= Aws::SNS::Client.new(region: region)
+    def sns(region: my_region)
+      @sns_client ||= {}
+      @sns_client[region] ||= Aws::SNS::Client.new(region: region)
     end
 
-    def autoscaling
-      @autoscaling_client ||= Aws::Autoscaling::Client.new(region: region)
+    def autoscaling(region: my_region)
+      @autoscaling_client ||= {}
+      @autoscaling_client[region] ||= Aws::Autoscaling::Client.new(region: region)
     end
 
     def s3
@@ -78,7 +85,7 @@ module MovableInk
 
     def notify_slack(subject:, message:)
       sns.publish(topic_arn: sns_slack_topic_arn,
-                  subject: "#{subject} (#{instance_id}, #{region})"
+                  subject: "#{subject} (#{instance_id}, #{my_region})",
                   message: message)
     end
 
@@ -105,8 +112,7 @@ module MovableInk
 
     def load_thopter_instance
       run_with_backoff do
-        Aws::EC2::Client.new(region: 'us-east-1')
-          .describe_instances(filters: [
+        ec2(region: 'us-east-1').describe_instances(filters: [
             {
               name: 'tag:mi:roles',
               values: ['*thopter*']
@@ -126,22 +132,26 @@ module MovableInk
       end
     end
 
-    def all_instances
-      @all_instances ||= load_all_instances
+    def all_instances(region: my_region, no_filter: false)
+      @all_instances ||= {}
+      @all_instances[region] ||= load_all_instances(region, no_filter: no_filter)
     end
 
-    def load_all_instances
+    def load_all_instances(region, no_filter: no_filter)
+      filters = if no_filter
+        [{
+          name: 'instance-state-name',
+          values: ['running']
+        },
+        {
+          name: 'tag:mi:env',
+          values: [mi_env]
+        }]
+      else
+        nil
+      end
       run_with_backoff do
-        resp = ec2.describe_instances(filters: [
-                                        {
-                                          name: 'instance-state-name',
-                                          values: ['running']
-                                        },
-                                        {
-                                          name: 'tag:mi:env',
-                                          values: [mi_env]
-                                        }
-                                      ])
+        resp = ec2(region: region).describe_instances(filters: filters)
         reservations = resp.reservations
         while (!resp.last_page?) do
           resp = resp.next_page
@@ -151,10 +161,10 @@ module MovableInk
       end
     end
 
-    def instances(role:, availability_zone: nil)
+    def instances(role:, region: my_region, availability_zone: nil)
       role_pattern = mi_env == 'production' ? "^#{role}$" : "^*#{role}*$"
       role_pattern = role_pattern.gsub('**','*').gsub('*','.*')
-      instances = all_instances.select { |instance|
+      instances = all_instances(region: region).select { |instance|
         instance.tags.detect { |tag|
           tag.key == 'mi:roles'&&
             Regexp.new(role_pattern).match(tag.value) &&
