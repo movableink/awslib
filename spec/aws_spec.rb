@@ -1,0 +1,54 @@
+require 'aws-sdk'
+require_relative '../lib/movable_ink/aws'
+
+describe MovableInk::AWS do
+  context "outside EC2" do
+    it "should raise an error if EC2 is required" do
+      aws = MovableInk::AWS.new
+      expect{ aws.instance_id }.to raise_error(MovableInk::AWS::EC2Required)
+      expect{ aws.availability_zone }.to raise_error(MovableInk::AWS::EC2Required)
+    end
+  end
+
+  context "inside EC2" do
+    it "should call ec2metadata to get the instance ID" do
+      aws = MovableInk::AWS.new
+      expect(aws).to receive(:`).with('ec2metadata --instance-id').and_return('i-12345')
+      expect(aws.instance_id).to eq('i-12345')
+    end
+
+    it "should call ec2metadata to get the availability zone" do
+      aws = MovableInk::AWS.new
+      expect(aws).to receive(:`).with('ec2metadata --availability-zone').and_return("us-east-1a\n")
+      expect(aws.availability_zone).to eq('us-east-1a')
+    end
+
+    it "should find the datacenter by region" do
+      aws = MovableInk::AWS.new
+      expect(aws).to receive(:`).with('ec2metadata --availability-zone').and_return("us-east-1a\n")
+      expect(aws.datacenter).to eq('iad')
+    end
+
+    context "MovableInk::AWS#run_with_backoff" do
+      it "should retry when throttled with increasing timeouts" do
+        aws = MovableInk::AWS.new(environment: 'test')
+        ec2 = Aws::EC2::Client.new(stub_responses: true)
+        ec2.stub_responses(:describe_instances, 'RequestLimitExceeded')
+
+        expect(aws).to receive(:notify_slack).exactly(9).times
+        expect(aws).to receive(:sleep).exactly(9).times.and_return(true)
+
+        aws.run_with_backoff { ec2.describe_instances } rescue nil
+      end
+
+      it "should raise an error after too many timeouts" do
+        aws = MovableInk::AWS.new(environment: 'test')
+        ec2 = Aws::EC2::Client.new(stub_responses: true)
+        ec2.stub_responses(:describe_instances, 'RequestLimitExceeded')
+
+        expect(aws).to receive(:notify_and_sleep).exactly(9).times
+        expect{ aws.run_with_backoff { ec2.describe_instances } }.to raise_error(MovableInk::AWS::FailedWithBackoff)
+      end
+    end
+  end
+end
