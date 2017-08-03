@@ -29,7 +29,7 @@ module MovableInk
           notify_and_sleep((num+1)**2 + rand(10), $!.class)
         end
       end
-      raise MovableInk::AWS::FailedWithBackoff
+      raise MovableInk::AWS::Errors::FailedWithBackoff
     end
 
     def regions
@@ -42,7 +42,7 @@ module MovableInk
     end
 
     def availability_zone
-      @availability_zone ||= `ec2metadata --availability-zone`.chomp rescue raise(MovableInk::AWS::EC2Required)
+      @availability_zone ||= `ec2metadata --availability-zone`.chomp rescue raise(MovableInk::AWS::Errors::EC2Required)
     end
 
     def my_region
@@ -50,7 +50,7 @@ module MovableInk
     end
 
     def instance_id
-      @instance_id ||= `ec2metadata --instance-id`.chomp rescue raise(MovableInk::AWS::EC2Required)
+      @instance_id ||= `ec2metadata --instance-id`.chomp rescue raise(MovableInk::AWS::Errors::EC2Required)
     end
 
     def datacenter(region: my_region)

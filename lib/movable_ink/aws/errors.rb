@@ -1,6 +1,8 @@
 module MovableInk
   class AWS
-    class FailedWithBackoff < StandardError; end
-    class EC2Required < StandardError; end
+    module Errors
+      class FailedWithBackoff < StandardError; end
+      class EC2Required < StandardError; end
+    end
   end
 end

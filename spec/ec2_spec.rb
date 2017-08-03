@@ -5,7 +5,7 @@ describe MovableInk::AWS::EC2 do
   context "outside EC2" do
     it "should raise an error if trying to load mi_env outside of EC2" do
       aws = MovableInk::AWS.new
-      expect{ aws.mi_env }.to raise_error(MovableInk::AWS::EC2Required)
+      expect{ aws.mi_env }.to raise_error(MovableInk::AWS::Errors::EC2Required)
     end
 
     it "should use the provided environment" do

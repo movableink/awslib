@@ -5,8 +5,8 @@ describe MovableInk::AWS do
   context "outside EC2" do
     it "should raise an error if EC2 is required" do
       aws = MovableInk::AWS.new
-      expect{ aws.instance_id }.to raise_error(MovableInk::AWS::EC2Required)
-      expect{ aws.availability_zone }.to raise_error(MovableInk::AWS::EC2Required)
+      expect{ aws.instance_id }.to raise_error(MovableInk::AWS::Errors::EC2Required)
+      expect{ aws.availability_zone }.to raise_error(MovableInk::AWS::Errors::EC2Required)
     end
   end
 
@@ -47,7 +47,7 @@ describe MovableInk::AWS do
         ec2.stub_responses(:describe_instances, 'RequestLimitExceeded')
 
         expect(aws).to receive(:notify_and_sleep).exactly(9).times
-        expect{ aws.run_with_backoff { ec2.describe_instances } }.to raise_error(MovableInk::AWS::FailedWithBackoff)
+        expect{ aws.run_with_backoff { ec2.describe_instances } }.to raise_error(MovableInk::AWS::Errors::FailedWithBackoff)
       end
     end
   end
