@@ -217,8 +217,6 @@ describe MovableInk::AWS::EC2 do
         allow(aws).to receive(:ec2).and_return(ec2)
 
         expect(aws.redis_by_role('visitor_redis', port)).to eq(redii)
-        # expect(['10.0.0.1', '10.0.0.2']).to include(aws.statsd_host)
-        # expect(['10.0.0.1', '10.0.0.2']).to include(aws.statsd_host)
       end
     end
   end
