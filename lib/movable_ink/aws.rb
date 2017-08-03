@@ -29,7 +29,7 @@ module MovableInk
           notify_and_sleep((num+1)**2 + rand(10), $!.class)
         end
       end
-      nil
+      raise MovableInk::AWS::FailedWithBackoff
     end
 
     def regions
@@ -41,12 +41,8 @@ module MovableInk
       }
     end
 
-    def ec2_required
-      raise("Can only be used in EC2")
-    end
-
     def availability_zone
-      @availability_zone ||= `ec2metadata --availability-zone`.chomp rescue ec2_required
+      @availability_zone ||= `ec2metadata --availability-zone`.chomp rescue raise(MovableInk::AWS::EC2Required)
     end
 
     def my_region
@@ -54,7 +50,7 @@ module MovableInk
     end
 
     def instance_id
-      @instance_id ||= `ec2metadata --instance-id`.chomp rescue ec2_required
+      @instance_id ||= `ec2metadata --instance-id`.chomp rescue raise(MovableInk::AWS::EC2Required)
     end
 
     def datacenter(region: my_region)
