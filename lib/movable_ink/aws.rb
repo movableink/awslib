@@ -26,7 +26,7 @@ module MovableInk
                Aws::AutoScaling::Errors::ThrottledException,
                Aws::S3::Errors::SlowDown,
                Aws::Route53::Errors::ThrottlingException
-          notify_and_sleep(num**2 + rand(10), $!.class)
+          notify_and_sleep((num+1)**2 + rand(10), $!.class)
         end
       end
       nil
