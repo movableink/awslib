@@ -13,6 +13,17 @@ module MovableInk
     include Autoscaling
     include Route53
 
+    class << self
+      def regions
+        {
+          'iad' => 'us-east-1',
+          'rld' => 'us-west-2',
+          'dub' => 'eu-west-1',
+          'ord' => 'us-east-2'
+        }
+      end
+    end
+
     def initialize(environment: nil)
       @mi_env = environment
     end
@@ -33,12 +44,7 @@ module MovableInk
     end
 
     def regions
-      {
-        'iad' => 'us-east-1',
-        'rld' => 'us-west-2',
-        'dub' => 'eu-west-1',
-        'ord' => 'us-east-2'
-      }
+      self.class.regions
     end
 
     def availability_zone
