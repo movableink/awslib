@@ -211,13 +211,13 @@ module MovableInk
     def instance_ip_addresses_by_role_ordered(role:)
       instances = instances(role: role)
       instances_in_my_az = instances.select { |instance| instance.placement.availability_zone == availability_zone }
-      ordered_instances = instances_in_my_az + (instances - instances_in_my_az).shuffle
+      ordered_instances = instances_in_my_az.shuffle + (instances - instances_in_my_az).shuffle
       private_ip_addresses(ordered_instances)
     end
 
     def redis_by_role(role, port)
       instance_ip_addresses_by_role(role: role)
-        .shuffe
+        .shuffle
         .inject([]) { |redii, instance|
           redii.push({"host" => instance, "port" => port})
         }
