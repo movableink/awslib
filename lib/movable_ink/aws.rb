@@ -73,6 +73,10 @@ module MovableInk
       @route53_client ||= Aws::Route53::Client.new(region: 'us-east-1')
     end
 
+    def ssm
+      @ssm_client ||= Aws::SSM::Client.new(region: 'us-east-1')
+    end
+
     def sns_slack_topic_arn
       run_with_backoff do
         sns.list_topics.topics.select {|topic| topic.topic_arn.include? "slack-aws-alerts"}
@@ -334,6 +338,20 @@ module MovableInk
         end
 
         resource_record_sets
+      end
+    end
+
+    def get_secret(environment: mi_env, role:, attribute:)
+      run_with_backoff do
+        begin
+          resp = ssm.get_parameter(
+                   name: "/#{environment}/#{role}/#{attribute}",
+                   with_decryption: true
+                 )
+          resp.parameter.value
+        rescue Aws::SSM::Errors::ParameterNotFound => e
+          nil
+        end
       end
     end
   end
