@@ -369,7 +369,7 @@ module MovableInk
                     with_decryption: true,
                     next_token: resp.next_token
                   )
-          secrets += extract_parameters(resp.parameters, path)
+          secrets.merge!(extract_parameters(resp.parameters, path))
         end
 
         secrets
@@ -378,8 +378,8 @@ module MovableInk
 
     def extract_parameters(parameters, path)
       parameters.map do |param|
-        { param.name.gsub("#{path}/", '') => param.value }
-      end
+        [ param.name.gsub("#{path}/", ''), param.value ]
+      end.to_h
     end
   end
 end
