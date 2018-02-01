@@ -5,6 +5,7 @@ require_relative 'aws/ec2'
 require_relative 'aws/sns'
 require_relative 'aws/autoscaling'
 require_relative 'aws/route53'
+require_relative 'aws/ssm'
 
 module MovableInk
   class AWS
@@ -12,6 +13,7 @@ module MovableInk
     include SNS
     include Autoscaling
     include Route53
+    include SSM
 
     class << self
       def regions
@@ -36,7 +38,8 @@ module MovableInk
                Aws::SNS::Errors::ThrottledException,
                Aws::AutoScaling::Errors::ThrottledException,
                Aws::S3::Errors::SlowDown,
-               Aws::Route53::Errors::ThrottlingException
+               Aws::Route53::Errors::ThrottlingException,
+               Aws::SSM::Errors::TooManyUpdates
           notify_and_sleep((num+1)**2 + rand(10), $!.class)
         end
       end
