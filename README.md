@@ -25,4 +25,3 @@ miaws.instance_ip_addresses_by_role(role: 'varnish').map { |m| "http://#{m}:8080
 
 ...
 ```
-
