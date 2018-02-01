@@ -216,7 +216,7 @@ describe MovableInk::AWS::EC2 do
         allow(aws).to receive(:my_region).and_return('us-east-1')
         allow(aws).to receive(:ec2).and_return(ec2)
 
-        expect(aws.redis_by_role('visitor_redis', port)).to eq(redii)
+        expect(aws.redis_by_role('visitor_redis', port)).to match_array(redii)
       end
     end
   end
