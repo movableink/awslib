@@ -11,11 +11,7 @@ module MovableInk
 
       def load_all_elastic_ips
         run_with_backoff do
-          addresses = []
-          ec2.describe_addresses.each do |resp|
-            addresses += resp.addresses
-          end
-          addresses
+          ec2.describe_addresses.flat_map(&:addresses)
         end
       end
 
@@ -52,14 +48,9 @@ module MovableInk
 
       def list_all_r53_resource_record_sets(hosted_zone_id)
         run_with_backoff do
-          resource_record_sets = []
           route53.list_resource_record_sets({
             hosted_zone_id: hosted_zone_id
-          }).each do |resp|
-            resource_record_sets += resp.resource_record_sets
-          end
-
-          resource_record_sets
+          }).flat_map(&:resource_record_sets)
         end
       end
     end
