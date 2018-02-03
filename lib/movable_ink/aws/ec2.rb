@@ -45,8 +45,7 @@ module MovableInk
             }
           ])
           .reservations
-          .map { |r| r.instances }
-          .flatten
+          .flat_map { |r| r.instances }
         end
       end
 
@@ -68,13 +67,11 @@ module MovableInk
             values: [mi_env]
           }]
         end
-        instances = []
         run_with_backoff do
-          ec2(region: region).describe_instances(filters: filters).each do |resp|
-            instances += resp.reservations.map { |r| r.instances }.flatten
+          ec2(region: region).describe_instances(filters: filters).flat_map do |resp|
+            resp.reservations.flat_map { |r| r.instances }
           end
         end
-        instances
       end
 
       def instances(role:, region: my_region, availability_zone: nil)
