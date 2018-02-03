@@ -45,7 +45,7 @@ module MovableInk
             }
           ])
           .reservations
-          .flat_map { |r| r.instances }
+          .flat_map(&:instances)
         end
       end
 
@@ -69,7 +69,7 @@ module MovableInk
         end
         run_with_backoff do
           ec2(region: region).describe_instances(filters: filters).flat_map do |resp|
-            resp.reservations.flat_map { |r| r.instances }
+            resp.reservations.flat_map(&:instances)
           end
         end
       end
@@ -102,7 +102,7 @@ module MovableInk
       end
 
       def private_ip_addresses(instances)
-        instances.map {|instance| instance.private_ip_address}
+        instances.map(&:private_ip_address)
       end
 
       def instance_ip_addresses_by_role(role:, availability_zone: nil)
