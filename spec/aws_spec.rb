@@ -13,19 +13,19 @@ describe MovableInk::AWS do
   context "inside EC2" do
     it "should call ec2metadata to get the instance ID" do
       aws = MovableInk::AWS.new
-      expect(aws).to receive(:`).with('ec2metadata --instance-id').and_return('i-12345')
+      expect(aws).to receive(:`).with('ec2metadata --instance-id 2>/dev/null').and_return("i-12345\n")
       expect(aws.instance_id).to eq('i-12345')
     end
 
     it "should call ec2metadata to get the availability zone" do
       aws = MovableInk::AWS.new
-      expect(aws).to receive(:`).with('ec2metadata --availability-zone').and_return("us-east-1a\n")
+      expect(aws).to receive(:`).with('ec2metadata --availability-zone 2>/dev/null').and_return("us-east-1a\n")
       expect(aws.availability_zone).to eq('us-east-1a')
     end
 
     it "should find the datacenter by region" do
       aws = MovableInk::AWS.new
-      expect(aws).to receive(:`).with('ec2metadata --availability-zone').and_return("us-east-1a\n")
+      expect(aws).to receive(:`).with('ec2metadata --availability-zone 2>/dev/null').and_return("us-east-1a\n")
       expect(aws.datacenter).to eq('iad')
     end
 
@@ -37,6 +37,7 @@ describe MovableInk::AWS do
 
         expect(aws).to receive(:notify_slack).exactly(9).times
         expect(aws).to receive(:sleep).exactly(9).times.and_return(true)
+        expect(STDOUT).to receive(:puts).exactly(9).times
 
         aws.run_with_backoff { ec2.describe_instances } rescue nil
       end
