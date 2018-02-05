@@ -51,7 +51,11 @@ module MovableInk
     end
 
     def availability_zone
-      @availability_zone ||= `ec2metadata --availability-zone`.chomp rescue raise(MovableInk::AWS::Errors::EC2Required)
+      @availability_zone ||= begin
+        az = `ec2metadata --availability-zone 2>/dev/null`.chomp
+        raise(MovableInk::AWS::Errors::EC2Required) if az.empty?
+        az
+      end
     end
 
     def my_region
@@ -59,7 +63,11 @@ module MovableInk
     end
 
     def instance_id
-      @instance_id ||= `ec2metadata --instance-id`.chomp rescue raise(MovableInk::AWS::Errors::EC2Required)
+      @instance_id ||= begin
+        az = `ec2metadata --instance-id 2>/dev/null`.chomp
+        raise(MovableInk::AWS::Errors::EC2Required) if az.empty?
+        az
+      end
     end
 
     def datacenter(region: my_region)
