@@ -37,6 +37,7 @@ describe MovableInk::AWS do
 
         expect(aws).to receive(:notify_slack).exactly(9).times
         expect(aws).to receive(:sleep).exactly(9).times.and_return(true)
+        expect(STDOUT).to receive(:puts).exactly(9).times
 
         aws.run_with_backoff { ec2.describe_instances } rescue nil
       end
