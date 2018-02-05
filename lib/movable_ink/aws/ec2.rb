@@ -31,22 +31,21 @@ module MovableInk
       def load_thopter_instance
         run_with_backoff do
           ec2(region: 'us-east-1').describe_instances(filters: [
-              {
-                name: 'tag:mi:roles',
-                values: ['*thopter*']
-              },
-              {
-                name: 'tag:mi:env',
-                values: [mi_env]
-              },
-              {
-                name: 'instance-state-name',
-                values: ['running']
-              }
-            ])
-            .reservations
-            .map { |r| r.instances }
-            .flatten
+            {
+              name: 'tag:mi:roles',
+              values: ['*thopter*']
+            },
+            {
+              name: 'tag:mi:env',
+              values: [mi_env]
+            },
+            {
+              name: 'instance-state-name',
+              values: ['running']
+            }
+          ])
+          .reservations
+          .flat_map(&:instances)
         end
       end
 
@@ -69,13 +68,9 @@ module MovableInk
           }]
         end
         run_with_backoff do
-          resp = ec2(region: region).describe_instances(filters: filters)
-          reservations = resp.reservations
-          while (!resp.last_page?) do
-            resp = resp.next_page
-            reservations += resp.reservations
+          ec2(region: region).describe_instances(filters: filters).flat_map do |resp|
+            resp.reservations.flat_map(&:instances)
           end
-          reservations.map { |r| r.instances }.flatten
         end
       end
 
@@ -107,7 +102,7 @@ module MovableInk
       end
 
       def private_ip_addresses(instances)
-        instances.map {|instance| instance.private_ip_address}
+        instances.map(&:private_ip_address)
       end
 
       def instance_ip_addresses_by_role(role:, availability_zone: nil)

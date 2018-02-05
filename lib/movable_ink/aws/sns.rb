@@ -8,8 +8,11 @@ module MovableInk
 
       def sns_slack_topic_arn
         run_with_backoff do
-          sns.list_topics.topics.select {|topic| topic.topic_arn.include? "slack-aws-alerts"}
-             .first.topic_arn
+          sns.list_topics.each do |resp|
+            resp.topics.each do |topic|
+              return topic.topic_arn if topic.topic_arn.include? "slack-aws-alerts"
+            end
+          end
         end
       end
 

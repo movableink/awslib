@@ -22,21 +22,12 @@ module MovableInk
       def get_role_secrets(environment: mi_env, role:)
         path = "/#{environment}/#{role}"
         run_with_backoff do
-          resp = ssm.get_parameters_by_path(
-                    path: path,
-                    with_decryption: true
-                  )
-          secrets = extract_parameters(resp.parameters, path)
-          while resp.next_token do
-            resp = ssm.get_parameters_by_path(
-                      path: path,
-                      with_decryption: true,
-                      next_token: resp.next_token
-                    )
-            secrets.merge!(extract_parameters(resp.parameters, path))
+          ssm.get_parameters_by_path(
+            path: path,
+            with_decryption: true
+          ).inject({}) do |secrets, resp|
+            extract_parameters(resp.parameters, path)
           end
-
-          secrets
         end
       end
 

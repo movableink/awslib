@@ -11,13 +11,7 @@ module MovableInk
 
       def load_all_elastic_ips
         run_with_backoff do
-          resp = ec2.describe_addresses
-          addresses = resp.addresses
-          while (!resp.last_page?) do
-            resp = resp.next_page
-            addresses += resp.addresses
-          end
-          addresses
+          ec2.describe_addresses.flat_map(&:addresses)
         end
       end
 
@@ -54,21 +48,9 @@ module MovableInk
 
       def list_all_r53_resource_record_sets(hosted_zone_id)
         run_with_backoff do
-          resp = route53.list_resource_record_sets({
+          route53.list_resource_record_sets({
             hosted_zone_id: hosted_zone_id
-          })
-
-          resource_record_sets = resp.resource_record_sets
-          while (resp.is_truncated) do
-            resp = route53.list_resource_record_sets({
-              hosted_zone_id: hosted_zone_id,
-              start_record_type: resp.next_record_type,
-              start_record_name: resp.next_record_name
-            })
-            resource_record_sets += resp.resource_record_sets
-          end
-
-          resource_record_sets
+          }).flat_map(&:resource_record_sets)
         end
       end
     end
