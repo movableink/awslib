@@ -6,11 +6,19 @@
 
 ## "Publishing"
 
-`s3cmd put -P MovableInkAWS-<VERSION>.gem s3://movableink-chef/MovableInkAWS/`
+Travis will automatically publish your gem to rubygems.org when you tag a release and push to origin.
+Before you do so, ensure that the version in `lib/movable_ink/version.rb` matches the tag you're creating,
+e.g. Version `1.0.0` in `lib/movable_ink/version.rb` should be tagged as `v1.0.0`
 
 ## Installing
 
-`gem install ./MovableInkAWS-<VERSION>.gem`
+### From rubygems.org
+
+`gem install MovableInkAWS -v <VERSION>`
+
+### Locally
+
+`gem install MovableInkAWS-<VERSION>.gem`
 
 ## Using
 
