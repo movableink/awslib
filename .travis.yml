@@ -1,4 +1,5 @@
 language: ruby
+
 rvm:
   - 2.2
 
@@ -6,3 +7,12 @@ bundler_args: "--retry=3"
 
 script:
   - rspec spec/
+
+deploy:
+  provider: rubygems
+  api_key:
+    secure: NAHVFo9MwOnAYhq1NzZz22/2p34Iw/L71ZNt2WHSbWuMVnA/xyvVu7Ja/S25aQmaV/btNkxTYtbJbf83QZTO9/IwkashWFcWJtLiptZkBRdpkiunMPWX9Gw3Ap5fODUIPxLFyLYWd53huNBJppBCVQTUPwkLEcWJcQZP4MU7dkhW5QKdQgmyNTlMy8epxyMqCQe7V0n98LCwreUsHxHMToe6/V0FemysjYjpnyNvcFpGFa9kf28VQw8ZpDR0iobw9hg6qs61Xj69Y3ns9fWI3sdnk8VjY29M+V415/ksyn7kzCjYiQsGGCFerzjMffIt/4PXqX81GRvcymxmpXWwtikJYP95kiHYbLGFUNS5GJngbyVgO5+amjx7vSZfaBGSXcUCSkxLV1Ki4QfMYnA4ihogwTdQhIALSEV9GzOfFt147lUok2LgZDzNfn9nCPL+qKMBNaBRe7/YoWGuvLQG/smYjunPYhis0ynAQ1Sytc7lgtbdEtLFzfET87ITVS4Y2F9TQ+z1fxROAn/YwMmdSPyiaXVLEOIUc/gx0BjJneTl43M4l6ZId8Q6maJTNG2Fd0yK0hwLJcsN/257HbnPEiTTgkXBcg58E6/ABfZqwDnJrP3sQPem85M4BxLJIPUvfBkYzyeAEV+ALYDJx+KLaqYCCgavF9M+41VbkkNZyKU=
+  gem: MovableInkAWS
+  on:
+    tags: true
+    repo: movableink/awslib
