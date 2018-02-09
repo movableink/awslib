@@ -26,7 +26,7 @@ module MovableInk
             path: path,
             with_decryption: true
           ).inject({}) do |secrets, resp|
-            extract_parameters(resp.parameters, path)
+            secrets.merge!(extract_parameters(resp.parameters, path))
           end
         end
       end
