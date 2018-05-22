@@ -74,6 +74,18 @@ module MovableInk
         end
       end
 
+      def instance_id
+        @instance_id ||= begin
+          az = `ec2metadata --instance-id 2>/dev/null`.chomp
+          raise(MovableInk::AWS::Errors::EC2Required) if az.empty?
+          az
+        end
+      end
+
+      def me
+        @me || = all_instances.select(|instance| instance.instance_id == instance_id)
+      end
+
       def instances(role:, region: my_region, availability_zone: nil)
         role_pattern = mi_env == 'production' ? "^#{role}$" : "^*#{role}*$"
         role_pattern = role_pattern.gsub('**','*').gsub('*','.*')
