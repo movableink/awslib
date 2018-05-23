@@ -83,7 +83,7 @@ module MovableInk
       end
 
       def me
-        @me || = all_instances.select(|instance| instance.instance_id == instance_id)
+        @me ||= all_instances.select{|instance| instance.instance_id == instance_id}
       end
 
       def instances(role:, region: my_region, availability_zone: nil)
