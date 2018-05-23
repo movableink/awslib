@@ -39,7 +39,10 @@ module MovableInk
                Aws::AutoScaling::Errors::ThrottledException,
                Aws::S3::Errors::SlowDown,
                Aws::Route53::Errors::ThrottlingException,
-               Aws::SSM::Errors::TooManyUpdates
+               Aws::Route53::Errors::ServiceError,
+               Aws::SSM::Errors::TooManyUpdates,
+               Aws::Route53::Errors::InvalidChangeBatch,
+               Aws::Route53::Errors::InvalidInput
           notify_and_sleep((num+1)**2 + rand(10), $!.class)
         end
       end
