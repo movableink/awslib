@@ -11,16 +11,20 @@ module MovableInk
       end
 
       def load_mi_env
-        run_with_backoff do
-          ec2.describe_tags(filters: [
-                {
-                  name: 'resource-id',
-                  values: [instance_id]
-                }
-              ])
-             .tags
-             .detect { |tag| tag.key == 'mi:env' }
-             .value
+        run_with_backoff(quiet: true) do
+          begin
+            ec2.describe_tags(filters: [
+                  {
+                    name: 'resource-id',
+                    values: [instance_id]
+                  }
+                ])
+              .tags
+              .detect { |tag| tag.key == 'mi:env' }
+              .value
+          rescue NoMethodError
+            raise MovableInk::AWS::Errors::NoEnvironmentTagError
+          end
         end
       end
 
