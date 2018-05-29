@@ -42,6 +42,18 @@ describe MovableInk::AWS do
         aws.run_with_backoff { ec2.describe_instances } rescue nil
       end
 
+      it "should not notify slack when quiet param is passed in" do
+        aws = MovableInk::AWS.new(environment: 'test')
+        ec2 = Aws::EC2::Client.new(stub_responses: true)
+        ec2.stub_responses(:describe_instances, 'RequestLimitExceeded')
+
+        expect(aws).to receive(:notify_slack).exactly(1).times
+        expect(aws).to receive(:sleep).exactly(9).times.and_return(true)
+        expect(STDOUT).to receive(:puts).exactly(1).times
+
+        aws.run_with_backoff(quiet: true) { ec2.describe_instances } rescue nil
+      end
+
       it "should raise an error after too many timeouts" do
         aws = MovableInk::AWS.new(environment: 'test')
         ec2 = Aws::EC2::Client.new(stub_responses: true)
