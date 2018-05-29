@@ -30,7 +30,7 @@ module MovableInk
       @mi_env = environment
     end
 
-    def run_with_backoff
+    def run_with_backoff(quiet: false)
       9.times do |num|
         begin
           return yield
@@ -40,8 +40,14 @@ module MovableInk
                Aws::S3::Errors::SlowDown,
                Aws::Route53::Errors::ThrottlingException,
                Aws::Route53::Errors::ServiceError,
-               Aws::SSM::Errors::TooManyUpdates
-          notify_and_sleep((num+1)**2 + rand(10), $!.class)
+               Aws::SSM::Errors::TooManyUpdates,
+               MovableInk::AWS::Errors::NoEnvironmentTagError
+          sleep_time = (num+1)**2 + rand(10)
+          if quiet
+            (num >=8) ? notify_and_sleep(sleep_time, $!.class) : sleep(sleep_time)
+          else
+            notify_and_sleep(sleep_time, $!.class)
+          end
         end
       end
       raise MovableInk::AWS::Errors::FailedWithBackoff
