@@ -219,5 +219,80 @@ describe MovableInk::AWS::EC2 do
         expect(aws.redis_by_role('visitor_redis', port)).to match_array(redii)
       end
     end
+
+    context "elastic IPs" do
+      let(:elastic_ip_data) { ec2.stub_data(:describe_addresses, addresses: [
+          {
+            allocation_id: "eipalloc-1",
+            association_id: "eipassoc-1",
+            domain: "vpc",
+            public_ip: "1.1.1.1",
+            tags: [{
+              key: 'mi:role',
+              value: 'some_role'
+            }]
+          },
+          {
+            allocation_id: "eipalloc-2",
+            association_id: "eipassoc-2",
+            domain: "vpc",
+            public_ip: "1.1.1.2",
+            tags: [{
+              key: 'mi:role',
+              value: 'some_role'
+            }]
+          },
+          {
+            allocation_id: "eipalloc-3",
+            association_id: nil,
+            domain: "vpc",
+            public_ip: "1.1.1.3",
+            tags: [{
+              key: 'mi:role',
+              value: 'some_role'
+            }]
+          }
+        ])
+      }
+      let(:associate_address_data) { ec2.stub_data(:associate_address, association_id: 'eipassoc-3') }
+
+      it "should find all elastic IPs" do
+        ec2.stub_responses(:describe_addresses, elastic_ip_data)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:ec2).and_return(ec2)
+
+        expect(aws.elastic_ips.count).to eq(3)
+        expect(aws.elastic_ips.first.public_ip).to eq('1.1.1.1')
+        expect(aws.elastic_ips.last.public_ip).to eq('1.1.1.3')
+      end
+
+      it "should find unassigned elastic IPs" do
+        ec2.stub_responses(:describe_addresses, elastic_ip_data)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:ec2).and_return(ec2)
+
+        expect(aws.unassigned_elastic_ips.count).to eq(1)
+        expect(aws.unassigned_elastic_ips.first.public_ip).to eq('1.1.1.3')
+      end
+
+      it "should filter reserved IPs to get available IPs" do
+        ec2.stub_responses(:describe_addresses, elastic_ip_data)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:ec2).and_return(ec2)
+
+        expect(aws.available_elastic_ips(role: 'some_role').count).to eq(1)
+        expect(aws.available_elastic_ips(role: 'some_role').first['public_ip']).to eq('1.1.1.3')
+      end
+
+      it "should assign an elastic IP" do
+        ec2.stub_responses(:describe_addresses, elastic_ip_data)
+        ec2.stub_responses(:associate_address, associate_address_data)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:instance_id).and_return('i-12345')
+        allow(aws).to receive(:ec2).and_return(ec2)
+
+        expect(aws.assign_ip_address(role: 'some_role').association_id).to eq('eipassoc-3')
+      end
+    end
   end
 end
