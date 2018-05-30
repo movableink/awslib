@@ -228,7 +228,7 @@ describe MovableInk::AWS::EC2 do
             domain: "vpc",
             public_ip: "1.1.1.1",
             tags: [{
-              key: 'mi:role',
+              key: 'mi:roles',
               value: 'some_role'
             }]
           },
@@ -238,7 +238,7 @@ describe MovableInk::AWS::EC2 do
             domain: "vpc",
             public_ip: "1.1.1.2",
             tags: [{
-              key: 'mi:role',
+              key: 'mi:roles',
               value: 'some_role'
             }]
           },
@@ -248,7 +248,7 @@ describe MovableInk::AWS::EC2 do
             domain: "vpc",
             public_ip: "1.1.1.3",
             tags: [{
-              key: 'mi:role',
+              key: 'mi:roles',
               value: 'some_role'
             }]
           }

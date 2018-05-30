@@ -151,7 +151,7 @@ module MovableInk
       end
 
       def available_elastic_ips(role:)
-        unassigned_elastic_ips.select { |address| address.tags.detect { |t| t.key == 'mi:role' && t.value == role } }
+        unassigned_elastic_ips.select { |address| address.tags.detect { |t| t.key == 'mi:roles' && t.value == role } }
       end
 
       def assign_ip_address(role:)
