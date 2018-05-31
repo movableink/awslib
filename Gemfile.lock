@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    MovableInkAWS (0.1.6)
-      aws-sdk (~> 2.10, >= 2.10.0)
+    MovableInkAWS (0.1.7)
+      aws-sdk (~> 2.11, >= 2.11.0)
 
 GEM
   remote: https://rubygems.org/

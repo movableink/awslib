@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.authors       = ['Matt Chesler']
   s.email         = 'mchesler@movableink.com'
 
-  s.add_runtime_dependency 'aws-sdk',  '~> 2.10', '>= 2.10.0'
+  s.add_runtime_dependency 'aws-sdk',  '~> 2.11', '>= 2.11.0'
 
   all_files  = `git ls-files`.split("\n")
   test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
