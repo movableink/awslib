@@ -139,6 +139,29 @@ module MovableInk
             redii.push({"host" => instance, "port" => port})
           }
       end
+
+      def elastic_ips
+        @all_elastic_ips ||= run_with_backoff do
+          ec2.describe_addresses.flat_map(&:addresses)
+        end
+      end
+
+      def unassigned_elastic_ips
+        @unassigned_elastic_ips ||= elastic_ips.select { |address| address.association_id.nil? }
+      end
+
+      def available_elastic_ips(role:)
+        unassigned_elastic_ips.select { |address| address.tags.detect { |t| t.key == 'mi:roles' && t.value == role } }
+      end
+
+      def assign_ip_address(role:)
+        run_with_backoff do
+          ec2.associate_address({
+            instance_id: instance_id,
+            allocation_id: available_elastic_ips(role: role).sample.allocation_id
+          })
+        end
+      end
     end
   end
 end
