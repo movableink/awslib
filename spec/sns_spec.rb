@@ -1,4 +1,3 @@
-require 'aws-sdk'
 require_relative '../lib/movable_ink/aws'
 
 describe MovableInk::AWS::SNS do
