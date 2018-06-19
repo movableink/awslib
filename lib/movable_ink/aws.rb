@@ -7,6 +7,7 @@ require_relative 'aws/autoscaling'
 require_relative 'aws/route53'
 require_relative 'aws/ssm'
 require_relative 'aws/athena'
+require_relative 'aws/s3'
 
 module MovableInk
   class AWS
@@ -16,6 +17,7 @@ module MovableInk
     include Route53
     include SSM
     include Athena
+    include S3
 
     class << self
       def regions
@@ -74,10 +76,6 @@ module MovableInk
 
     def datacenter(region: my_region)
       regions.key(region)
-    end
-
-    def s3
-      @s3_client ||= Aws::S3::Client.new(region: 'us-east-1')
     end
   end
 end
