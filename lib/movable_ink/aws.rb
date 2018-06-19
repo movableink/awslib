@@ -6,6 +6,7 @@ require_relative 'aws/sns'
 require_relative 'aws/autoscaling'
 require_relative 'aws/route53'
 require_relative 'aws/ssm'
+require_relative 'aws/athena'
 
 module MovableInk
   class AWS
@@ -14,6 +15,7 @@ module MovableInk
     include Autoscaling
     include Route53
     include SSM
+    include Athena
 
     class << self
       def regions
@@ -41,6 +43,7 @@ module MovableInk
                Aws::Route53::Errors::ThrottlingException,
                Aws::Route53::Errors::ServiceError,
                Aws::SSM::Errors::TooManyUpdates,
+               Aws::Athena::Errors::ThrottlingException,
                MovableInk::AWS::Errors::NoEnvironmentTagError
           sleep_time = (num+1)**2 + rand(10)
           if quiet
