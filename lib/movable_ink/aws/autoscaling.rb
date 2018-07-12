@@ -55,11 +55,12 @@ module MovableInk
         end
       end
 
-      def record_lifecycle_action_heartbeat(hook_name:, group_name:)
+      def record_lifecycle_action_heartbeat(lifecycle_hook_name:, auto_scaling_group_name:, lifecycle_action_token:)
         run_with_backoff do
           autoscaling.record_lifecycle_action_heartbeat({
-            lifecycle_hook_name:     hook_name,
-            auto_scaling_group_name: group_name
+            lifecycle_hook_name:     lifecycle_hook_name,
+            auto_scaling_group_name: auto_scaling_group_name,
+            lifecycle_action_token:  lifecycle_action_token
           })
         end
       end

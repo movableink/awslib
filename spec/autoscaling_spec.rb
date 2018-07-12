@@ -50,6 +50,6 @@ describe MovableInk::AWS::Autoscaling do
     allow(aws).to receive(:my_region).and_return('us-east-1')
     allow(aws).to receive(:autoscaling).and_return(autoscaling)
 
-    expect(aws.record_lifecycle_action_heartbeat(hook_name: 'hook', group_name: 'group')).to eq(Aws::EmptyStructure.new)
+    expect(aws.record_lifecycle_action_heartbeat(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', lifecycle_action_token: 'token')).to eq(Aws::EmptyStructure.new)
   end
 end
