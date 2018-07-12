@@ -41,6 +41,16 @@ describe MovableInk::AWS do
         aws.run_with_backoff { ec2.describe_instances } rescue nil
       end
 
+      it "should not retry and raise if a non-throttling error occurs" do
+        aws = MovableInk::AWS.new(environment: 'test')
+        route53 = Aws::Route53::Client.new(stub_responses: true)
+        route53.stub_responses(:list_resource_record_sets, 'NoSuchHostedZone')
+
+        expect(aws).to receive(:notify_slack).exactly(1).times
+        expect(STDOUT).to receive(:puts).exactly(1).times
+        expect{ aws.run_with_backoff { route53.list_resource_record_sets(hosted_zone_id: 'foo') } }.to raise_error(MovableInk::AWS::Errors::ServiceError)
+      end
+
       it "should not notify slack when quiet param is passed in" do
         aws = MovableInk::AWS.new(environment: 'test')
         ec2 = Aws::EC2::Client.new(stub_responses: true)
