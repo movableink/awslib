@@ -43,7 +43,7 @@ module MovableInk
                Aws::AutoScaling::Errors::ThrottledException,
                Aws::S3::Errors::SlowDown,
                Aws::Route53::Errors::ThrottlingException,
-               Aws::Route53::Errors::ServiceError,
+               Aws::Route53::Errors::PriorRequestNotComplete,
                Aws::SSM::Errors::TooManyUpdates,
                Aws::Athena::Errors::ThrottlingException,
                MovableInk::AWS::Errors::NoEnvironmentTagError
@@ -53,6 +53,12 @@ module MovableInk
           else
             notify_and_sleep(sleep_time, $!.class)
           end
+        rescue Aws::Errors::ServiceError => e
+          message = "#{e.class}: #{e.message}\nFrom `#{e.backtrace.last.gsub("`","'")}`"
+          notify_slack(subject: 'Unhandled AWS API Error',
+                       message: message)
+          puts message
+          raise MovableInk::AWS::Errors::ServiceError
         end
       end
       raise MovableInk::AWS::Errors::FailedWithBackoff
