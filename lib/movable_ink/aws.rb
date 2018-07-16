@@ -30,8 +30,12 @@ module MovableInk
       end
     end
 
-    def initialize(environment: nil)
+    def initialize(environment: nil, global_service: nil)
       @mi_env = environment
+      if global_service
+        @availability_zone = 'us-east-1a'
+        @instance_id = global_service
+      end
     end
 
     def run_with_backoff(quiet: false)
