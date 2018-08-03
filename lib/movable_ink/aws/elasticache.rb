@@ -18,13 +18,20 @@ module MovableInk
       end
 
       def elasticache_replica_in_my_az(role)
-        replication_group(role).node_groups
-                               .first
-                               .node_group_members
-                               .select{|ng| ng.preferred_availability_zone == availability_zone}
-                               .first
-                               .read_endpoint
-                               .address
+        members = replication_group(role).node_groups
+                                         .first
+                                         .node_group_members
+                                         .select{|ng| ng.preferred_availability_zone == availability_zone}
+        begin
+          members.select{|ng| ng.current_role == 'replica'}
+          .first
+          .read_endpoint
+          .address
+        rescue NoMethodError
+          members.first
+                 .read_endpoint
+                 .address
+        end
       end
     end
   end

@@ -11,9 +11,14 @@ describe MovableInk::AWS::ElastiCache do
             primary_endpoint: {address: 'primary'},
             node_group_members: [
               {preferred_availability_zone: 'us-foo-1a',
-              read_endpoint: {address: 'address-1a'} },
+              read_endpoint: {address: 'address-1a'},
+              current_role: 'replica' },
+              {preferred_availability_zone: 'us-foo-1a',
+                read_endpoint: {address: 'address-1a-primary'},
+                current_role: 'primary' },
               {preferred_availability_zone: 'us-foo-1b',
-                read_endpoint: {address: 'address-1b'} }
+                read_endpoint: {address: 'address-1b'},
+                current_role: 'primary' }
             ]
           }],
         ]
@@ -22,12 +27,17 @@ describe MovableInk::AWS::ElastiCache do
     before(:each) do
       elasticache.stub_responses(:describe_replication_groups, replication_group)
       allow(aws).to receive(:mi_env).and_return('test')
-      allow(aws).to receive(:availability_zone).and_return('us-foo-1a')
       allow(aws).to receive(:elasticache).and_return(elasticache)
     end
 
     it "should return the correct read address" do
+      allow(aws).to receive(:availability_zone).and_return('us-foo-1a')
       expect(aws.elasticache_replica_in_my_az("foo")).to eq("address-1a")
+    end
+
+    it "should return the primary if there is no replica" do
+      allow(aws).to receive(:availability_zone).and_return('us-foo-1b')
+      expect(aws.elasticache_replica_in_my_az("foo")).to eq("address-1b")
     end
   end
 end
