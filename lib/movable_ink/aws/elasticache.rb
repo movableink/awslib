@@ -17,6 +17,14 @@ module MovableInk
                                .address
       end
 
+      def all_elasticache_replicas(role)
+        replication_group(role).node_groups
+                               .first
+                               .node_group_members
+                               .select{|ng| ng.current_role == 'replica'}
+                               .map{|member| member.read_endpoint.address}
+      end
+
       def elasticache_replica_in_my_az(role)
         members = replication_group(role).node_groups
                                          .first

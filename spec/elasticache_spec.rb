@@ -18,7 +18,10 @@ describe MovableInk::AWS::ElastiCache do
                 current_role: 'primary' },
               {preferred_availability_zone: 'us-foo-1b',
                 read_endpoint: {address: 'address-1b'},
-                current_role: 'primary' }
+                current_role: 'primary' },
+              {preferred_availability_zone: 'us-foo-1c',
+                read_endpoint: {address: 'address-1c'},
+                current_role: 'replica' },
             ]
           }],
         ]
@@ -38,6 +41,11 @@ describe MovableInk::AWS::ElastiCache do
     it "should return the primary if there is no replica" do
       allow(aws).to receive(:availability_zone).and_return('us-foo-1b')
       expect(aws.elasticache_replica_in_my_az("foo")).to eq("address-1b")
+    end
+
+    it "should return an array of all replicas" do
+      allow(aws).to receive(:availability_zone).and_return('us-foo-1b')
+      expect(aws.all_elasticache_replicas("foo")).to eq(["address-1a", "address-1c"])
     end
   end
 end
