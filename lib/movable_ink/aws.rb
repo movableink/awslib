@@ -8,6 +8,8 @@ require_relative 'aws/route53'
 require_relative 'aws/ssm'
 require_relative 'aws/athena'
 require_relative 'aws/s3'
+require_relative 'aws/elasticache'
+
 
 module MovableInk
   class AWS
@@ -18,6 +20,7 @@ module MovableInk
     include SSM
     include Athena
     include S3
+    include ElastiCache
 
     class << self
       def regions
