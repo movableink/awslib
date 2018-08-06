@@ -8,7 +8,7 @@ module MovableInk
 
       def replication_group(role)
         run_with_backoff do
-          @replication_group ||= elasticache.describe_replication_groups({replication_group_id: "#{mi_env}-role"}).replication_groups.first
+          @replication_group ||= elasticache.describe_replication_groups({replication_group_id: "#{mi_env}-#{role}"}).replication_groups.first
         end
       end
 
