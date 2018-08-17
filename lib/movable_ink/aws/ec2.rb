@@ -121,12 +121,12 @@ module MovableInk
         instances.map(&:private_ip_address)
       end
 
-      def instance_ip_addresses_by_role(role:, availability_zone: nil)
-        private_ip_addresses(instances(role: role, availability_zone: availability_zone))
+      def instance_ip_addresses_by_role(role:, region: my_region, availability_zone: nil)
+        private_ip_addresses(instances(role: role, region: region, availability_zone: availability_zone))
       end
 
-      def instance_ip_addresses_by_role_ordered(role:)
-        instances = instances(role: role)
+      def instance_ip_addresses_by_role_ordered(role:, region: my_region)
+        instances = instances(role: role, region: region)
         instances_in_my_az = instances.select { |instance| instance.placement.availability_zone == availability_zone }
         ordered_instances = instances_in_my_az.shuffle + (instances - instances_in_my_az).shuffle
         private_ip_addresses(ordered_instances)
