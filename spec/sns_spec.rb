@@ -26,5 +26,21 @@ describe MovableInk::AWS::SNS do
     allow(aws).to receive(:sns).and_return(sns)
 
     expect(aws.notify_slack(subject: 'Test subject', message: 'Test message').message_id).to eq('messageId')
+
+  end
+
+  it "should truncate subjects longer than 100 characters" do
+    sns.stub_responses(:list_topics, topic_data)
+    allow(aws).to receive(:my_region).and_return('us-east-1')
+    allow(aws).to receive(:instance_id).and_return('test instance')
+
+    allow(aws).to receive(:sns).and_return(sns)
+    message = 'Test message'
+    subject = "a"*100
+    expected_subject = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (test instance, us-east-1)"
+    expect(sns).to receive(:publish).with({:topic_arn=>"slack-aws-alerts", :message=>"Test message", :subject => expected_subject})
+
+    aws.notify_slack(subject: subject, message: message)
+
   end
 end
