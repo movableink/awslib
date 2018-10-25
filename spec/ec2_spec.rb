@@ -4,6 +4,8 @@ describe MovableInk::AWS::EC2 do
   context "outside EC2" do
     it "should raise an error if trying to load mi_env outside of EC2" do
       aws = MovableInk::AWS.new
+      allow(aws).to receive(:`).with('ec2metadata --instance-id 2>/dev/null').and_return("")
+      allow(aws).to receive(:`).with('ec2metadata --availability-zone 2>/dev/null').and_return("")
       expect{ aws.mi_env }.to raise_error(MovableInk::AWS::Errors::EC2Required)
     end
 

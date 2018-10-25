@@ -30,9 +30,11 @@ module MovableInk
       end
 
       def notify_slack(subject:, message:)
+        required_info = " (#{instance_id}, #{my_region})"
+        subject = "#{subject.slice(0, 99-required_info.length)}#{required_info}"
         run_with_backoff do
           sns.publish(topic_arn: sns_slack_topic_arn,
-                      subject: "#{subject} (#{instance_id}, #{my_region})",
+                      subject: subject,
                       message: message)
         end
       end
