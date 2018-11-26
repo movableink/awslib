@@ -65,7 +65,7 @@ module MovableInk
         end
       end
 
-      def keep_instance_alive(lifecycle_hook_name, auto_scaling_group_name, lifecycle_action_token)
+      def keep_instance_alive(lifecycle_hook_name:, auto_scaling_group_name:, lifecycle_action_token:)
         24.downto(1) do |hours|
           record_lifecycle_action_heartbeat(
             lifecycle_hook_name: lifecycle_hook_name,
