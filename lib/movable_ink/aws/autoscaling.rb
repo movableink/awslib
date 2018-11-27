@@ -72,7 +72,6 @@ module MovableInk
             auto_scaling_group_name: auto_scaling_group_name,
             lifecycle_action_token: lifecycle_action_token
           )
-          log("Keep instance alive for another hour. #{hours} hours left.")
           sleep 3600
         end
       end
