@@ -93,7 +93,9 @@ module MovableInk
       def instances(role:, region: my_region, availability_zone: nil)
         instances = all_instances(region: region).select { |instance|
           instance.tags.detect { |tag|
-            tag.key == 'mi:roles' && !tag.value.include?('decommissioned')
+            tag.key == 'mi:roles' &&
+            tag.value == role &&
+            !tag.value.include?('decommissioned')
           }
         }
         if availability_zone
