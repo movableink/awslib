@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    MovableInkAWS (0.2.5)
+    MovableInkAWS (0.2.6)
       aws-sdk (= 2.11.233)
 
 GEM
@@ -39,4 +39,4 @@ DEPENDENCIES
   rspec (~> 3.6)
 
 BUNDLED WITH
-   1.16.2
+   1.16.6
