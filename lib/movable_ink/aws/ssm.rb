@@ -1,21 +1,24 @@
 module MovableInk
   class AWS
     module SSM
-      def us_east_ssm
-        @us_east_client ||= Aws::SSM::Client.new(region: 'us-east-1')
+      FAILOVER_REGIONS = ['us-east-1', 'us-west-2']
+
+      def ssm_client(region = my_region)
+        @ssm_client ||= Aws::SSM::Client.new(region: region)
       end
 
-      def us_west_ssm
-        @us_west_client ||= Aws::SSM::Client.new(region: 'us-west-2')
+      def ssm_client_failover(region = nil)
+        failover_region = region || FAILOVER_REGIONS.reject { |region| region == my_region }.first
+        @ssm_client_failover ||= Aws::SSM::Client.new(region: failover_region)
       end
 
       def run_with_backoff_and_client_fallback(&block)
         run_with_backoff do
-          block.call(us_east_ssm)
+          block.call(ssm_client)
         end
       rescue MovableInk::AWS::Errors::FailedWithBackoff => e
         run_with_backoff(tries: 3) do
-          block.call(us_west_ssm)
+          block.call(ssm_client_failover)
         end
       end
 

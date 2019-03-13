@@ -50,7 +50,7 @@ describe MovableInk::AWS::SSM do
   it "should retrieve a decrypted secret" do
     ssm.stub_responses(:get_parameter, parameter)
     allow(aws).to receive(:mi_env).and_return('test')
-    allow(aws).to receive(:us_east_ssm).and_return(ssm)
+    allow(aws).to receive(:ssm_client).and_return(ssm)
 
     expect(aws.get_secret(role: 'sneakers', attribute: 'setec-astronomy')).to eq('too-many-secrets')
   end
@@ -58,15 +58,28 @@ describe MovableInk::AWS::SSM do
   it "should retrieve all secrets for a role" do
     ssm.stub_responses(:get_parameters_by_path, parameters)
     allow(aws).to receive(:mi_env).and_return('test')
-    allow(aws).to receive(:us_east_ssm).and_return(ssm)
+    allow(aws).to receive(:ssm_client).and_return(ssm)
 
     expect(aws.get_role_secrets(role: 'zelda')).to eq(zelda_secrets)
   end
 
+  describe 'ssm_client_failover' do
+    it 'returns a region from the array of failover regions that doesnt match my_region' do
+      allow(aws).to receive(:my_region).and_return('us-east-1')
+      expect(Aws::SSM::Client).to receive(:new).with({ region: 'us-west-2' })
+      aws.ssm_client_failover
+    end
+
+    it 'accepts a passed in region override' do
+      expect(Aws::SSM::Client).to receive(:new).with({ region: 'eu-central-1' })
+      aws.ssm_client_failover('eu-central-1')
+    end
+  end
+
   describe 'run_with_backoff_and_client_fallback' do
-    it 'passes in the us_east_ssm client and then the us_west_ssm client' do
-      allow(aws).to receive(:us_east_ssm).and_return(1)
-      allow(aws).to receive(:us_west_ssm).and_return(2)
+    it 'passes in the ssm_client client and then the ssm_client_failover client' do
+      allow(aws).to receive(:ssm_client).and_return(1)
+      allow(aws).to receive(:ssm_client_failover).and_return(2)
       allow(aws).to receive(:notify_and_sleep).and_return(nil)
 
       results = []
