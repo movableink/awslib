@@ -142,7 +142,7 @@ module MovableInk
 
       def elastic_ips
         @all_elastic_ips ||= run_with_backoff do
-          ec2.describe_addresses.flat_map(&:addresses)
+          ec2.describe_addresses.addresses
         end
       end
 
