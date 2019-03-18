@@ -63,16 +63,17 @@ describe MovableInk::AWS::SSM do
     expect(aws.get_role_secrets(role: 'zelda')).to eq(zelda_secrets)
   end
 
+  describe 'ssm_client' do
+    it 'uses to us-east-1 as a primary for secrets' do
+      expect(Aws::SSM::Client).to receive(:new).with({ region: 'us-east-1' })
+      aws.ssm_client
+    end
+  end
+
   describe 'ssm_client_failover' do
-    it 'returns a region from the array of failover regions that doesnt match my_region' do
-      allow(aws).to receive(:my_region).and_return('us-east-1')
+    it 'fails over to us-west-2' do
       expect(Aws::SSM::Client).to receive(:new).with({ region: 'us-west-2' })
       aws.ssm_client_failover
-    end
-
-    it 'accepts a passed in region override' do
-      expect(Aws::SSM::Client).to receive(:new).with({ region: 'eu-central-1' })
-      aws.ssm_client_failover('eu-central-1')
     end
   end
 
