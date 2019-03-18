@@ -41,8 +41,8 @@ module MovableInk
       end
     end
 
-    def run_with_backoff(quiet: false)
-      9.times do |num|
+    def run_with_backoff(quiet: false, tries: 9)
+      tries.times do |num|
         begin
           return yield
         rescue Aws::EC2::Errors::RequestLimitExceeded,
@@ -57,7 +57,7 @@ module MovableInk
                MovableInk::AWS::Errors::NoEnvironmentTagError
           sleep_time = (num+1)**2 + rand(10)
           if quiet
-            (num >=8) ? notify_and_sleep(sleep_time, $!.class) : sleep(sleep_time)
+            (num >= tries - 1) ? notify_and_sleep(sleep_time, $!.class) : sleep(sleep_time)
           else
             notify_and_sleep(sleep_time, $!.class)
           end
