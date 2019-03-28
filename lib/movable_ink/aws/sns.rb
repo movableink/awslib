@@ -44,7 +44,6 @@ module MovableInk
       end
 
       def notify_pagerduty(region:, instance_id:)
-        subject = "Unable to drain NSQ"
         summary = "Unable to drain NSQ for instance #{instance_id} in region #{region}"
 
         # the PagerDuty integration key is added to the payload in the AWS integration
@@ -71,9 +70,8 @@ module MovableInk
         }.to_json
 
         run_with_backoff do
-          subject = add_subject_info(subject: subject)
           sns.publish(topic_arn: sns_pagerduty_topic_arn,
-                      subject: subject,
+                      subject: add_subject_info(subject: "Unable to drain NSQ"),
                       message: json_message)
         end
       end
@@ -85,9 +83,8 @@ module MovableInk
 
       def notify_slack(subject:, message:)
         run_with_backoff do
-          subject = add_subject_info(subject: subject)
           sns.publish(topic_arn: sns_slack_topic_arn,
-                      subject: subject,
+                      subject: add_subject_info(subject: subject),
                       message: message)
         end
       end
