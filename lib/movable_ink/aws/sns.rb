@@ -49,7 +49,7 @@ module MovableInk
 
         # the PagerDuty integration key is added to the payload in the AWS integration
         json_message = {
-          pagerdutyPayload: {
+          pagerduty: {
             event_action: 'trigger',
             payload: {
               source: 'MovableInkAWS',
