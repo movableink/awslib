@@ -11,8 +11,8 @@ describe MovableInk::AWS::ElastiCache do
             primary_endpoint: {address: 'primary'},
             node_group_members: [
               {preferred_availability_zone: 'us-foo-1a',
-              read_endpoint: {address: 'address-1a'},
-              current_role: 'replica' },
+                read_endpoint: {address: 'address-1a'},
+                current_role: 'replica' },
               {preferred_availability_zone: 'us-foo-1a',
                 read_endpoint: {address: 'address-1a-primary'},
                 current_role: 'primary' },
@@ -29,7 +29,6 @@ describe MovableInk::AWS::ElastiCache do
 
     before(:each) do
       elasticache.stub_responses(:describe_replication_groups, replication_group)
-      allow(aws).to receive(:mi_env).and_return('test')
       allow(aws).to receive(:elasticache).and_return(elasticache)
     end
 
