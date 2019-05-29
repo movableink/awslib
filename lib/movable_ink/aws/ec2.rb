@@ -86,6 +86,14 @@ module MovableInk
         end
       end
 
+      def private_ipv4
+        @ipv4 ||= begin
+          ipv4 = `ec2metadata --local-ipv4 2>/dev/null`.chomp
+          raise(MovableInk::AWS::Errors::EC2Required) if ipv4.empty?
+          ipv4
+        end
+      end
+
       def me
         @me ||= all_instances.select{|instance| instance.instance_id == instance_id}
       end
