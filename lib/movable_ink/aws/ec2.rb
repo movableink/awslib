@@ -28,29 +28,23 @@ module MovableInk
         end
       end
 
-      def thopter_instance
-        @thopter_instance ||= load_thopter_instance
+      def thopter_filter
+        [{
+          name: 'tag:mi:roles',
+          values: ['*thopter*']
+        },
+        {
+          name: 'tag:mi:env',
+          values: [mi_env]
+        },
+        {
+          name: 'instance-state-name',
+          values: ['running']
+        }]
       end
 
-      def load_thopter_instance
-        run_with_backoff do
-          ec2(region: 'us-east-1').describe_instances(filters: [
-            {
-              name: 'tag:mi:roles',
-              values: ['*thopter*']
-            },
-            {
-              name: 'tag:mi:env',
-              values: [mi_env]
-            },
-            {
-              name: 'instance-state-name',
-              values: ['running']
-            }
-          ])
-          .reservations
-          .flat_map(&:instances)
-        end
+      def thopter_instance
+        @thopter_instance ||= load_all_instances('us-east-1', filter: thopter_filter)
       end
 
       def all_instances(region: my_region, no_filter: false)
