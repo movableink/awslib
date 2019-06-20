@@ -34,6 +34,27 @@ module MovableInk
           }).flat_map(&:resource_record_sets)
         end
       end
+
+      def list_health_checks
+        run_with_backoff do
+          route53.list_health_checks().flat_map(&:health_checks)
+        end
+      end
+
+      def get_health_check_tags(health_check_id)
+        run_with_backoff do
+          route53.list_tags_for_resource({
+            resource_type: 'healthcheck',
+            resource_id: health_check_id
+          }).resource_tag_set.tags
+        end
+      end
+
+      def find_health_check_by_tag(key, value)
+        list_health_checks.detect do |health_check|
+          get_health_check_tags(health_check.id).detect { |tag| tag.key == key && tag.value.include?(value) }
+        end
+      end
     end
   end
 end
