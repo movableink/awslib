@@ -58,19 +58,20 @@ module MovableInk
         @all_instances[region] ||= load_all_instances(region, no_filter: no_filter)
       end
 
-      def load_all_instances(region, no_filter: false)
-        filters = if no_filter
-          nil
-        else
-          [{
-            name: 'instance-state-name',
-            values: ['running']
-          },
-          {
-            name: 'tag:mi:env',
-            values: [mi_env]
-          }]
-        end
+      def default_filter
+        [{
+          name: 'instance-state-name',
+          values: ['running']
+        },
+        {
+          name: 'tag:mi:env',
+          values: [mi_env]
+        }]
+      end
+
+      def load_all_instances(region, no_filter: false, filter: nil)
+        filters = no_filter ? nil : (filter || default_filter)
+
         run_with_backoff do
           ec2(region: region).describe_instances(filters: filters).flat_map do |resp|
             resp.reservations.flat_map(&:instances)
