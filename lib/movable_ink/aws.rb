@@ -50,6 +50,7 @@ module MovableInk
                Aws::SNS::Errors::ThrottledException,
                Aws::AutoScaling::Errors::ThrottledException,
                Aws::S3::Errors::SlowDown,
+               Aws::Route53::Errors::Throttling,
                Aws::Route53::Errors::ThrottlingException,
                Aws::Route53::Errors::PriorRequestNotComplete,
                Aws::SSM::Errors::TooManyUpdates,

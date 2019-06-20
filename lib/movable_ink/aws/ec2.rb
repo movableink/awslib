@@ -28,29 +28,23 @@ module MovableInk
         end
       end
 
-      def thopter_instance
-        @thopter_instance ||= load_thopter_instance
+      def thopter_filter
+        [{
+          name: 'tag:mi:roles',
+          values: ['*thopter*']
+        },
+        {
+          name: 'tag:mi:env',
+          values: [mi_env]
+        },
+        {
+          name: 'instance-state-name',
+          values: ['running']
+        }]
       end
 
-      def load_thopter_instance
-        run_with_backoff do
-          ec2(region: 'us-east-1').describe_instances(filters: [
-            {
-              name: 'tag:mi:roles',
-              values: ['*thopter*']
-            },
-            {
-              name: 'tag:mi:env',
-              values: [mi_env]
-            },
-            {
-              name: 'instance-state-name',
-              values: ['running']
-            }
-          ])
-          .reservations
-          .flat_map(&:instances)
-        end
+      def thopter_instance
+        @thopter_instance ||= load_all_instances('us-east-1', filter: thopter_filter)
       end
 
       def all_instances(region: my_region, no_filter: false)
@@ -58,19 +52,20 @@ module MovableInk
         @all_instances[region] ||= load_all_instances(region, no_filter: no_filter)
       end
 
-      def load_all_instances(region, no_filter: false)
-        filters = if no_filter
-          nil
-        else
-          [{
-            name: 'instance-state-name',
-            values: ['running']
-          },
-          {
-            name: 'tag:mi:env',
-            values: [mi_env]
-          }]
-        end
+      def default_filter
+        [{
+          name: 'instance-state-name',
+          values: ['running']
+        },
+        {
+          name: 'tag:mi:env',
+          values: [mi_env]
+        }]
+      end
+
+      def load_all_instances(region, no_filter: false, filter: nil)
+        filters = no_filter ? nil : (filter || default_filter)
+
         run_with_backoff do
           ec2(region: region).describe_instances(filters: filters).flat_map do |resp|
             resp.reservations.flat_map(&:instances)
