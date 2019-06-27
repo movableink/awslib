@@ -94,15 +94,13 @@ module MovableInk
       end
 
       def instances(role:, region: my_region, availability_zone: nil)
-        role_pattern = mi_env == 'production' ? "^#{role}$" : "^*#{role}*$"
-        role_pattern = role_pattern.gsub('**','*').gsub('*','.*')
         instances = all_instances(region: region).select { |instance|
-          instance.tags.detect { |tag|
-            tag.key == 'mi:roles'&&
-              Regexp.new(role_pattern).match(tag.value) &&
-              !tag.value.include?('decommissioned')
+          instance.tags.select{ |tag| tag.key == 'mi:roles' }.detect { |tag|
+            roles = tag.value.split(/\s*,\s*/)
+            roles.include?(role) && !roles.include?('decommissioned')
           }
         }
+
         if availability_zone
           instances.select { |instance|
             instance.placement.availability_zone == availability_zone

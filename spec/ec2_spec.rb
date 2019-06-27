@@ -144,6 +144,77 @@ describe MovableInk::AWS::EC2 do
       end
     end
 
+    context "instances" do
+      let(:my_availability_zone) { 'us-east-1a' }
+      let(:other_availability_zone) { 'us-east-1b' }
+      let(:instance_data) { ec2.stub_data(:describe_instances, reservations: [
+        instances: [
+          {
+            tags: [
+              {
+                key: 'mi:name',
+                value: 'instance1'
+              },
+              {
+                key: 'mi:roles',
+                value: 'app, app_db_replica'
+              }
+            ],
+            private_ip_address: '10.0.0.1',
+            placement: {
+              availability_zone: my_availability_zone
+            }
+          },
+          {
+            tags: [
+              {
+                key: 'mi:name',
+                value: 'instance2'
+              },
+              {
+                key: 'mi:roles',
+                value: 'app_db_replica,db'
+              }
+            ],
+            private_ip_address: '10.0.0.2',
+            placement: {
+              availability_zone: other_availability_zone
+            }
+          },
+          {
+            tags: [
+              {
+                key: 'mi:name',
+                value: 'instance3'
+              },
+              {
+                key: 'mi:roles',
+                value: 'app_db, db'
+              }
+            ],
+            private_ip_address: '10.0.0.2',
+            placement: {
+              availability_zone: other_availability_zone
+            }
+          }
+        ]])
+      }
+
+      it "returns all instances matching a role" do
+        ec2.stub_responses(:describe_instances, instance_data)
+        allow(aws).to receive(:mi_env).and_return('test')
+        allow(aws).to receive(:availability_zone).and_return(my_availability_zone)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:ec2).and_return(ec2)
+
+        instances = aws.instances(role: 'app_db_replica')
+        expect(instances.map{|i| i.tags.first.value }).to eq(['instance1', 'instance2'])
+
+        instances = aws.instances(role: 'db')
+        expect(instances.map{|i| i.tags.first.value }).to eq(['instance2', 'instance3'])
+      end
+    end
+
     context "ordered roles" do
       let(:my_availability_zone) { 'us-east-1a' }
       let(:other_availability_zone) { 'us-east-1b' }
