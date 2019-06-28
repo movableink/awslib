@@ -37,6 +37,15 @@ describe MovableInk::AWS::Autoscaling do
     expect(aws.delete_role_tag(role: 'some_role')).to eq(Aws::EmptyStructure.new)
   end
 
+  it 'raises an ArgumentError when instance_id and lifecycle_action_token are not provided' do
+    autoscaling.stub_responses(:complete_lifecycle_action, complete_lifecycle_action_data)
+    allow(aws).to receive(:my_region).and_return('us-east-1')
+    allow(aws).to receive(:autoscaling).and_return(autoscaling)
+    expect {
+      aws.complete_lifecycle_action(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group')
+    }.to raise_error(ArgumentError)
+  end
+
   it "should complete lifecycle actions" do
     autoscaling.stub_responses(:complete_lifecycle_action, complete_lifecycle_action_data)
     allow(aws).to receive(:my_region).and_return('us-east-1')
@@ -89,5 +98,15 @@ describe MovableInk::AWS::Autoscaling do
       auto_scaling_group_name: 'group'
     }).and_call_original
     expect(aws.record_lifecycle_action_heartbeat(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', instance_id: 'i-987654321')).to eq(Aws::EmptyStructure.new)
+  end
+
+  it 'raises an ArgumentError when instance_id and lifecycle_action_token are not provided' do
+    autoscaling.stub_responses(:record_lifecycle_action_heartbeat, record_lifecycle_action_heartbeat_data)
+    allow(aws).to receive(:my_region).and_return('us-east-1')
+    allow(aws).to receive(:autoscaling).and_return(autoscaling)
+
+    expect {
+      aws.record_lifecycle_action_heartbeat(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group')
+    }.to raise_error(ArgumentError)
   end
 end
