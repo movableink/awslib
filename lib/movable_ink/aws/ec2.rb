@@ -72,7 +72,7 @@ module MovableInk
       end
 
       def instance_tags
-        @instance_tags ||= run_with_backoff do
+        @instance_tags ||= run_with_backoff(quiet: true) do
           ec2.describe_tags({
             filters: [{ name: 'resource-id', values: [instance_id] } ]
           }).tags
