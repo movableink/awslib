@@ -10,7 +10,7 @@ describe MovableInk::AWS::Autoscaling do
   let(:create_tags_data) { ec2.stub_data(:create_tags, {}) }
   let(:delete_tags_data) { ec2.stub_data(:delete_tags, {}) }
 
-  it "should mark an instance as unhealthy" do
+  it 'should mark an instance as unhealthy' do
     autoscaling.stub_responses(:set_instance_health, set_instance_health_data)
     allow(aws).to receive(:my_region).and_return('us-east-1')
     allow(aws).to receive(:instance_id).and_return('i-12345')
@@ -42,14 +42,52 @@ describe MovableInk::AWS::Autoscaling do
     allow(aws).to receive(:my_region).and_return('us-east-1')
     allow(aws).to receive(:autoscaling).and_return(autoscaling)
 
+    expect(autoscaling).to receive(:complete_lifecycle_action).with({
+      lifecycle_action_result: 'CONTINUE',
+      lifecycle_action_token: 'token',
+      lifecycle_hook_name: 'hook',
+      auto_scaling_group_name: 'group',
+    }).and_call_original
     expect(aws.complete_lifecycle_action(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', lifecycle_action_token: 'token')).to eq(Aws::EmptyStructure.new)
   end
 
-  it "should record lifecycle action heartbeats" do
+  it 'allows passing the instance_id to complete a lifecycle action' do
+    autoscaling.stub_responses(:complete_lifecycle_action, complete_lifecycle_action_data)
+    allow(aws).to receive(:my_region).and_return('us-east-1')
+    allow(aws).to receive(:autoscaling).and_return(autoscaling)
+
+    expect(autoscaling).to receive(:complete_lifecycle_action).with({
+      lifecycle_action_result: 'CONTINUE',
+      lifecycle_hook_name: 'hook',
+      instance_id: 'i-987654321',
+      auto_scaling_group_name: 'group'
+    }).and_call_original
+    expect(aws.complete_lifecycle_action(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', instance_id: 'i-987654321')).to eq(Aws::EmptyStructure.new)
+  end
+
+  it 'should record lifecycle action heartbeats' do
     autoscaling.stub_responses(:record_lifecycle_action_heartbeat, record_lifecycle_action_heartbeat_data)
     allow(aws).to receive(:my_region).and_return('us-east-1')
     allow(aws).to receive(:autoscaling).and_return(autoscaling)
 
+    expect(autoscaling).to receive(:record_lifecycle_action_heartbeat).with({
+      lifecycle_action_token: 'token',
+      lifecycle_hook_name: 'hook',
+      auto_scaling_group_name: 'group'
+    }).and_call_original
     expect(aws.record_lifecycle_action_heartbeat(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', lifecycle_action_token: 'token')).to eq(Aws::EmptyStructure.new)
+  end
+
+  it 'allows passing the instance_id to record lifecycle action heartbeats' do
+    autoscaling.stub_responses(:record_lifecycle_action_heartbeat, record_lifecycle_action_heartbeat_data)
+    allow(aws).to receive(:my_region).and_return('us-east-1')
+    allow(aws).to receive(:autoscaling).and_return(autoscaling)
+
+    expect(autoscaling).to receive(:record_lifecycle_action_heartbeat).with({
+      instance_id: 'i-987654321',
+      lifecycle_hook_name: 'hook',
+      auto_scaling_group_name: 'group'
+    }).and_call_original
+    expect(aws.record_lifecycle_action_heartbeat(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', instance_id: 'i-987654321')).to eq(Aws::EmptyStructure.new)
   end
 end
