@@ -11,21 +11,11 @@ module MovableInk
       end
 
       def load_mi_env
-        run_with_backoff(quiet: true) do
-          begin
-            ec2.describe_tags(filters: [
-                  {
-                    name: 'resource-id',
-                    values: [instance_id]
-                  }
-                ])
-              .tags
-              .detect { |tag| tag.key == 'mi:env' }
-              .value
-          rescue NoMethodError
-            raise MovableInk::AWS::Errors::NoEnvironmentTagError
-          end
-        end
+        instance_tags
+          .detect { |tag| tag.key == 'mi:env' }
+          .value
+      rescue NoMethodError
+        raise MovableInk::AWS::Errors::NoEnvironmentTagError
       end
 
       def thopter_filter
@@ -78,6 +68,14 @@ module MovableInk
           az = `ec2metadata --instance-id 2>/dev/null`.chomp
           raise(MovableInk::AWS::Errors::EC2Required) if az.empty?
           az
+        end
+      end
+
+      def instance_tags
+        @instance_tags ||= run_with_backoff(quiet: true) do
+          ec2.describe_tags({
+            filters: [{ name: 'resource-id', values: [instance_id] } ]
+          }).tags
         end
       end
 

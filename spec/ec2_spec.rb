@@ -47,6 +47,16 @@ describe MovableInk::AWS::EC2 do
       expect(aws.private_ipv4).to eq('10.0.0.1')
     end
 
+    context 'instance_tags' do
+      it 'returns the tags of the current instance' do
+        ec2.stub_responses(:describe_tags, tag_data)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:instance_id).and_return('i-12345')
+        allow(aws).to receive(:ec2).and_return(ec2)
+        expect(aws.instance_tags).to eq(tag_data.tags)
+      end
+    end
+
     context "thopter" do
       let(:thopter_data) { ec2.stub_data(:describe_instances, reservations: [
         instances: [
