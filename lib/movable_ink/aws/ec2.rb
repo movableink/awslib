@@ -91,11 +91,15 @@ module MovableInk
         @me ||= all_instances.select{|instance| instance.instance_id == instance_id}
       end
 
-      def instances(role:, region: my_region, availability_zone: nil)
+      def instances(role:, region: my_region, availability_zone: nil, exact_match: false)
         instances = all_instances(region: region).select { |instance|
           instance.tags.select{ |tag| tag.key == 'mi:roles' }.detect { |tag|
             roles = tag.value.split(/\s*,\s*/)
-            roles.include?(role) && !roles.include?('decommissioned')
+            if exact_match
+              roles == [role]
+            else
+              roles.include?(role) && !roles.include?('decommissioned')
+            end
           }
         }
 
@@ -120,12 +124,12 @@ module MovableInk
         instances.map(&:private_ip_address)
       end
 
-      def instance_ip_addresses_by_role(role:, region: my_region, availability_zone: nil)
-        private_ip_addresses(instances(role: role, region: region, availability_zone: availability_zone))
+      def instance_ip_addresses_by_role(role:, region: my_region, availability_zone: nil, exact_match: false)
+        private_ip_addresses(instances(role: role, region: region, availability_zone: availability_zone, exact_match: exact_match))
       end
 
-      def instance_ip_addresses_by_role_ordered(role:, region: my_region)
-        instances = instances(role: role, region: region)
+      def instance_ip_addresses_by_role_ordered(role:, region: my_region, exact_match: false)
+        instances = instances(role: role, region: region, exact_match: exact_match)
         instances_in_my_az = instances.select { |instance| instance.placement.availability_zone == availability_zone }
         ordered_instances = instances_in_my_az.shuffle + (instances - instances_in_my_az).shuffle
         private_ip_addresses(ordered_instances)
