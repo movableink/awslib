@@ -9,6 +9,7 @@ require_relative 'aws/ssm'
 require_relative 'aws/athena'
 require_relative 'aws/s3'
 require_relative 'aws/elasticache'
+require_relative 'aws/api_gateway'
 
 
 module MovableInk
@@ -21,6 +22,7 @@ module MovableInk
     include Athena
     include S3
     include ElastiCache
+    include ApiGateway
 
     class << self
       def regions
