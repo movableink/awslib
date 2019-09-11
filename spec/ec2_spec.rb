@@ -250,6 +250,17 @@ describe MovableInk::AWS::EC2 do
         instances = aws.instances(role: 'app_db_replica', exact_match: true)
         expect(instances.map{|i| i.tags.first.value }).to eq(['instance4'])
       end
+
+      it "excludes requested roles" do
+        ec2.stub_responses(:describe_instances, instance_data)
+        allow(aws).to receive(:mi_env).and_return('test')
+        allow(aws).to receive(:availability_zone).and_return(my_availability_zone)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:ec2).and_return(ec2)
+
+        instances = aws.instances(role: 'app_db_replica', exclude_roles: ['db'])
+        expect(instances.map{|i| i.tags.first.value }).to eq(['instance1', 'instance4'])
+      end
     end
 
     context "ordered roles" do
