@@ -57,7 +57,7 @@ describe MovableInk::AWS::Autoscaling do
       lifecycle_hook_name: 'hook',
       auto_scaling_group_name: 'group',
     }).and_call_original
-    expect(aws.complete_lifecycle_action(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', lifecycle_action_token: 'token')).to eq(Aws::EmptyStructure.new)
+    expect(aws.complete_lifecycle_action(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', lifecycle_action_token: 'token')).to eq(Aws::AutoScaling::Types::CompleteLifecycleActionAnswer.new)
   end
 
   it 'allows passing the instance_id to complete a lifecycle action' do
@@ -71,7 +71,7 @@ describe MovableInk::AWS::Autoscaling do
       instance_id: 'i-987654321',
       auto_scaling_group_name: 'group'
     }).and_call_original
-    expect(aws.complete_lifecycle_action(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', instance_id: 'i-987654321')).to eq(Aws::EmptyStructure.new)
+    expect(aws.complete_lifecycle_action(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', instance_id: 'i-987654321')).to eq(Aws::AutoScaling::Types::CompleteLifecycleActionAnswer.new)
   end
 
   it 'should record lifecycle action heartbeats' do
@@ -84,7 +84,7 @@ describe MovableInk::AWS::Autoscaling do
       lifecycle_hook_name: 'hook',
       auto_scaling_group_name: 'group'
     }).and_call_original
-    expect(aws.record_lifecycle_action_heartbeat(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', lifecycle_action_token: 'token')).to eq(Aws::EmptyStructure.new)
+    expect(aws.record_lifecycle_action_heartbeat(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', lifecycle_action_token: 'token')).to eq(Aws::AutoScaling::Types::RecordLifecycleActionHeartbeatAnswer.new)
   end
 
   it 'allows passing the instance_id to record lifecycle action heartbeats' do
@@ -97,7 +97,7 @@ describe MovableInk::AWS::Autoscaling do
       lifecycle_hook_name: 'hook',
       auto_scaling_group_name: 'group'
     }).and_call_original
-    expect(aws.record_lifecycle_action_heartbeat(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', instance_id: 'i-987654321')).to eq(Aws::EmptyStructure.new)
+    expect(aws.record_lifecycle_action_heartbeat(lifecycle_hook_name: 'hook', auto_scaling_group_name: 'group', instance_id: 'i-987654321')).to eq(Aws::AutoScaling::Types::RecordLifecycleActionHeartbeatAnswer.new)
   end
 
   it 'raises an ArgumentError when instance_id and lifecycle_action_token are not provided' do
