@@ -15,10 +15,13 @@ module MovableInk
       end
 
       def delete_resource_record_sets(zone, instance_name)
+        resource_record_set = get_resource_record_sets_by_instance_name(zone, instance_name)
+        return if resource_record_set.empty?
+
         change_batch = {
           "changes": [{
             "action": 'DELETE',
-            "resource_record_set": get_resource_record_sets_by_instance_name(zone, instance_name)
+            "resource_record_set": resource_record_set
           }]
         }
 
