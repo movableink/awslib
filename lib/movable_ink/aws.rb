@@ -55,6 +55,7 @@ module MovableInk
                Aws::Route53::Errors::Throttling,
                Aws::Route53::Errors::ThrottlingException,
                Aws::Route53::Errors::PriorRequestNotComplete,
+               Aws::Route53::Errors::ServiceUnavailable,
                Aws::SSM::Errors::TooManyUpdates,
                Aws::Athena::Errors::ThrottlingException,
                MovableInk::AWS::Errors::NoEnvironmentTagError
