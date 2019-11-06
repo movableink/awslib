@@ -35,6 +35,7 @@ describe MovableInk::AWS::SNS do
     allow(aws).to receive(:my_region).and_return('us-east-1')
     allow(aws).to receive(:instance_id).and_return('test instance')
     allow(aws).to receive(:sns).and_return(sns)
+    allow(aws).to receive(:private_ipv4).and_return('10.0.0.1')
 
     expect(aws.notify_slack(subject: 'Test subject', message: 'Test message').message_id).to eq('messageId')
   end
@@ -44,6 +45,7 @@ describe MovableInk::AWS::SNS do
     allow(aws).to receive(:my_region).and_return('us-east-1')
     allow(aws).to receive(:instance_id).and_return('test instance')
     allow(aws).to receive(:sns).and_return(sns)
+    allow(aws).to receive(:private_ipv4).and_return('10.0.0.1')
 
     expect(aws.notify_pagerduty(region: 'us-east-1', instance_id: 'i-987654321').message_id).to eq('messageId')
   end
@@ -51,12 +53,14 @@ describe MovableInk::AWS::SNS do
   it "should truncate subjects longer than 100 characters" do
     sns.stub_responses(:list_topics, topic_data)
     allow(aws).to receive(:my_region).and_return('us-east-1')
-    allow(aws).to receive(:instance_id).and_return('test instance')
+    allow(aws).to receive(:instance_id).and_return('i-987654321')
+    allow(aws).to receive(:private_ipv4).and_return('10.0.0.1')
 
     allow(aws).to receive(:sns).and_return(sns)
     message = 'Test message'
-    subject = "a"*100
-    expected_subject = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (test instance, us-east-1)"
+    subject = "a"*150
+    instance_link = "https://us-east-1.console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances:search=i-987654321;sort=instanceId"
+    expected_subject = "#{"a" * 99}\nInstance: <#{instance_link}|i-987654321>, `10.0.0.1`, `us-east-1`"
     expect(sns).to receive(:publish).with({:topic_arn=>"slack-aws-alerts", :message=>"Test message", :subject => expected_subject})
 
     aws.notify_slack(subject: subject, message: message)
