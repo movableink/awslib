@@ -77,8 +77,9 @@ module MovableInk
       end
 
       def add_subject_info(subject:)
-        required_info = " (#{instance_id}, #{my_region})"
-        "#{subject.slice(0, 99-required_info.length)}#{required_info}"
+        instance_link = "<https://#{my_region}.console.aws.amazon.com/ec2/v2/home?region=#{my_region}#Instances:search=#{instance_id};sort=instanceId|#{instance_id}>"
+        required_info = "Instance: #{instance_link}, `#{private_ipv4}`, `#{my_region}`"
+        "#{subject.slice(0,99)}\n#{required_info}"
       end
 
       def notify_slack(subject:, message:)
