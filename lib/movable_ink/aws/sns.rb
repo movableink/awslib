@@ -1,5 +1,6 @@
 require 'time'
 require 'json'
+require 'aws-sdk-sns'
 
 module MovableInk
   class AWS

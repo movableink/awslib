@@ -1,3 +1,5 @@
+require 'aws-sdk-ssm'
+
 module MovableInk
   class AWS
     module SSM

@@ -1,3 +1,5 @@
+require 'aws-sdk-elasticache'
+
 module MovableInk
   class AWS
     module ElastiCache
