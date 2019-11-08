@@ -9,7 +9,15 @@ Gem::Specification.new do |s|
   s.authors       = ['Matt Chesler']
   s.email         = 'mchesler@movableink.com'
 
-  s.add_runtime_dependency 'aws-sdk', '~> 3'
+  s.add_runtime_dependency 'aws-sdk-core', '~> 3'
+  s.add_runtime_dependency 'aws-sdk-athena', '~> 1'
+  s.add_runtime_dependency 'aws-sdk-autoscaling', '~> 1'
+  s.add_runtime_dependency 'aws-sdk-ec2', '~> 1'
+  s.add_runtime_dependency 'aws-sdk-elasticache', '~> 1'
+  s.add_runtime_dependency 'aws-sdk-route53', '~> 1'
+  s.add_runtime_dependency 'aws-sdk-s3', '~> 1'
+  s.add_runtime_dependency 'aws-sdk-sns', '~> 1'
+  s.add_runtime_dependency 'aws-sdk-ssm', '~> 1'
   s.add_runtime_dependency 'aws-sigv4', '~> 1.1'
   s.add_runtime_dependency 'httparty',  '0.16.3'
 

@@ -1,4 +1,4 @@
-require 'aws-sdk'
+require 'aws-sdk-core'
 require 'aws-sigv4'
 require 'httparty'
 

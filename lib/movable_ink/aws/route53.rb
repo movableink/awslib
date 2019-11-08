@@ -1,3 +1,5 @@
+require 'aws-sdk-route53'
+
 module MovableInk
   class AWS
     module Route53

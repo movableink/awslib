@@ -1,3 +1,5 @@
+require 'aws-sdk-athena'
+
 module MovableInk
   class AWS
     module Athena

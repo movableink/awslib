@@ -1,5 +1,3 @@
-require 'aws-sdk'
-
 require_relative 'aws/errors'
 require_relative 'aws/ec2'
 require_relative 'aws/sns'

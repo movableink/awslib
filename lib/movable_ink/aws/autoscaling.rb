@@ -1,3 +1,5 @@
+require 'aws-sdk-autoscaling'
+
 module MovableInk
   class AWS
     module Autoscaling

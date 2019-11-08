@@ -1,3 +1,5 @@
+require 'aws-sdk-ec2'
+
 module MovableInk
   class AWS
     module EC2

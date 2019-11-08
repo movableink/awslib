@@ -1,3 +1,5 @@
+require 'aws-sdk-s3'
+
 module MovableInk
   class AWS
     module S3
