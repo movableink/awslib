@@ -19,6 +19,11 @@ describe MovableInk::AWS::EC2 do
       aws = MovableInk::AWS.new(environment: 'test')
       expect(aws.mi_env).to eq('test')
     end
+
+    it "should not find a 'me'" do
+      aws = MovableInk::AWS.new
+      expect(aws.me).to eq(nil)
+    end
   end
 
   context "inside EC2" do
@@ -170,6 +175,7 @@ describe MovableInk::AWS::EC2 do
                 value: 'app, app_db_replica'
               }
             ],
+            instance_id: 'i-12345',
             private_ip_address: '10.0.0.1',
             placement: {
               availability_zone: my_availability_zone
@@ -186,6 +192,7 @@ describe MovableInk::AWS::EC2 do
                 value: 'app_db_replica,db'
               }
             ],
+            instance_id: 'i-54321',
             private_ip_address: '10.0.0.2',
             placement: {
               availability_zone: other_availability_zone
@@ -202,6 +209,7 @@ describe MovableInk::AWS::EC2 do
                 value: 'app_db, db'
               }
             ],
+            instance_id: 'i-123abc',
             private_ip_address: '10.0.0.3',
             placement: {
               availability_zone: other_availability_zone
@@ -218,6 +226,7 @@ describe MovableInk::AWS::EC2 do
                 value: 'app_db_replica'
               }
             ],
+            instance_id: 'i-zyx987',
             private_ip_address: '10.0.0.4',
             placement: {
               availability_zone: other_availability_zone
@@ -226,38 +235,34 @@ describe MovableInk::AWS::EC2 do
         ]])
       }
 
-      it "returns all instances matching a role" do
+      before(:each) do
         ec2.stub_responses(:describe_instances, instance_data)
         allow(aws).to receive(:mi_env).and_return('test')
         allow(aws).to receive(:availability_zone).and_return(my_availability_zone)
         allow(aws).to receive(:my_region).and_return('us-east-1')
         allow(aws).to receive(:ec2).and_return(ec2)
+      end
 
-        instances = aws.instances(role: 'app_db_replica')
-        expect(instances.map{|i| i.tags.first.value }).to eq(['instance1', 'instance2', 'instance4'])
+      it "finds me" do
+        allow(aws).to receive(:instance_id).and_return('i-12345')
 
-        instances = aws.instances(role: 'db')
-        expect(instances.map{|i| i.tags.first.value }).to eq(['instance2', 'instance3'])
+        expect(aws.me.instance_id).to eq('i-12345')
+      end
+
+      it "returns all instances matching a role" do
+        app_db_replica_instances = aws.instances(role: 'app_db_replica')
+        expect(app_db_replica_instances.map{|i| i.tags.first.value }).to eq(['instance1', 'instance2', 'instance4'])
+
+        db_instances = aws.instances(role: 'db')
+        expect(db_instances.map{|i| i.tags.first.value }).to eq(['instance2', 'instance3'])
       end
 
       it "returns roles with exactly the specified role" do
-        ec2.stub_responses(:describe_instances, instance_data)
-        allow(aws).to receive(:mi_env).and_return('test')
-        allow(aws).to receive(:availability_zone).and_return(my_availability_zone)
-        allow(aws).to receive(:my_region).and_return('us-east-1')
-        allow(aws).to receive(:ec2).and_return(ec2)
-
         instances = aws.instances(role: 'app_db_replica', exact_match: true)
         expect(instances.map{|i| i.tags.first.value }).to eq(['instance4'])
       end
 
       it "excludes requested roles" do
-        ec2.stub_responses(:describe_instances, instance_data)
-        allow(aws).to receive(:mi_env).and_return('test')
-        allow(aws).to receive(:availability_zone).and_return(my_availability_zone)
-        allow(aws).to receive(:my_region).and_return('us-east-1')
-        allow(aws).to receive(:ec2).and_return(ec2)
-
         instances = aws.instances(role: 'app_db_replica', exclude_roles: ['db'])
         expect(instances.map{|i| i.tags.first.value }).to eq(['instance1', 'instance4'])
       end
