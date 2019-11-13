@@ -67,9 +67,9 @@ module MovableInk
 
       def instance_id
         @instance_id ||= begin
-          az = `ec2metadata --instance-id 2>/dev/null`.chomp
-          raise(MovableInk::AWS::Errors::EC2Required) if az.empty?
-          az
+          id = `ec2metadata --instance-id 2>/dev/null`.chomp
+          raise(MovableInk::AWS::Errors::EC2Required) if id.empty?
+          id
         end
       end
 
@@ -90,7 +90,7 @@ module MovableInk
       end
 
       def me
-        @me ||= all_instances.select{|instance| instance.instance_id == instance_id}
+        @me ||= all_instances.select{|instance| instance.instance_id == instance_id}.first rescue nil
       end
 
       def instances(role:, exclude_roles: [], region: my_region, availability_zone: nil, exact_match: false)
