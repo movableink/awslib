@@ -65,8 +65,7 @@ module MovableInk
           end
         rescue Aws::Errors::ServiceError => e
           message = "#{e.class}: #{e.message}\nFrom `#{e.backtrace.last.gsub("`","'")}`"
-          notify_slack(subject: 'Unhandled AWS API Error',
-                       message: message)
+          notify_slack(subject: 'Unhandled AWS API Error', message: message)
           puts message
           raise MovableInk::AWS::Errors::ServiceError
         end

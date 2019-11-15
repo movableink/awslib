@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    MovableInkAWS (1.0.6)
+    MovableInkAWS (1.0.7)
       aws-sdk-athena (~> 1)
       aws-sdk-autoscaling (~> 1)
       aws-sdk-core (~> 3)
@@ -18,14 +18,14 @@ GEM
   remote: https://rubygems.org/
   specs:
     aws-eventstream (1.0.3)
-    aws-partitions (1.238.0)
+    aws-partitions (1.233.0)
     aws-sdk-athena (1.21.0)
       aws-sdk-core (~> 3, >= 3.71.0)
       aws-sigv4 (~> 1.1)
     aws-sdk-autoscaling (1.29.0)
       aws-sdk-core (~> 3, >= 3.71.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-core (3.76.0)
+    aws-sdk-core (3.74.0)
       aws-eventstream (~> 1.0, >= 1.0.2)
       aws-partitions (~> 1, >= 1.228.0)
       aws-sigv4 (~> 1.1)
@@ -49,7 +49,7 @@ GEM
     aws-sdk-sns (1.20.0)
       aws-sdk-core (~> 3, >= 3.71.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-ssm (1.59.0)
+    aws-sdk-ssm (1.58.0)
       aws-sdk-core (~> 3, >= 3.71.0)
       aws-sigv4 (~> 1.1)
     aws-sigv4 (1.1.0)
