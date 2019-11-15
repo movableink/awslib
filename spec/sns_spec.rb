@@ -60,8 +60,8 @@ describe MovableInk::AWS::SNS do
     message = 'Test message'
     subject = "a"*150
     instance_link = "https://us-east-1.console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances:search=i-987654321;sort=instanceId"
-    expected_subject = "#{"a" * 99}\nInstance: <#{instance_link}|i-987654321>, `10.0.0.1`, `us-east-1`"
-    expect(sns).to receive(:publish).with({:topic_arn=>"slack-aws-alerts", :message=>"Test message", :subject => expected_subject})
+    expected_subject = "#{"a" * 99}"
+    expect(sns).to receive(:publish).with({:topic_arn=>"slack-aws-alerts", :message=>"Instance: <#{instance_link}|i-987654321>, `10.0.0.1`, `us-east-1`\nTest message", :subject => expected_subject})
 
     aws.notify_slack(subject: subject, message: message)
   end

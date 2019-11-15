@@ -72,22 +72,19 @@ module MovableInk
 
         run_with_backoff do
           sns.publish(topic_arn: sns_pagerduty_topic_arn,
-                      subject: add_subject_info(subject: "Unable to drain NSQ"),
+                      subject: "Unable to drain NSQ",
                       message: json_message)
         end
       end
 
-      def add_subject_info(subject:)
+      def notify_slack(subject:, message:)
         instance_link = "<https://#{my_region}.console.aws.amazon.com/ec2/v2/home?region=#{my_region}#Instances:search=#{instance_id};sort=instanceId|#{instance_id}>"
         required_info = "Instance: #{instance_link}, `#{private_ipv4}`, `#{my_region}`"
-        "#{subject.slice(0,99)}\n#{required_info}"
-      end
 
-      def notify_slack(subject:, message:)
         run_with_backoff do
           sns.publish(topic_arn: sns_slack_topic_arn,
-                      subject: add_subject_info(subject: subject),
-                      message: message)
+                      subject: subject.slice(0,99),
+                      message: "#{required_info}\n#{message}")
         end
       end
     end
