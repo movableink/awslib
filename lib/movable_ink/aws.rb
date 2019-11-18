@@ -8,6 +8,7 @@ require_relative 'aws/athena'
 require_relative 'aws/s3'
 require_relative 'aws/elasticache'
 require_relative 'aws/api_gateway'
+require 'aws-sdk-cloudwatch'
 
 
 module MovableInk
