@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'aws-sdk-core', '~> 3'
   s.add_runtime_dependency 'aws-sdk-athena', '~> 1'
   s.add_runtime_dependency 'aws-sdk-autoscaling', '~> 1'
+  s.add_runtime_dependency 'aws-sdk-cloudwatch', '~> 1'
   s.add_runtime_dependency 'aws-sdk-ec2', '~> 1'
   s.add_runtime_dependency 'aws-sdk-elasticache', '~> 1'
   s.add_runtime_dependency 'aws-sdk-rds', '~> 1'
