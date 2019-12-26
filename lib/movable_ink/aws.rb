@@ -39,6 +39,7 @@ module MovableInk
       if global_service
         @availability_zone = 'us-east-1a'
         @instance_id = global_service
+        @ipv4 = global_service
       end
     end
 
