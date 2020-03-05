@@ -34,8 +34,18 @@ module MovableInk
       end
     end
 
-    def initialize(environment: nil, global_service: nil)
+    def initialize(
+      ipv4: nil,
+      environment: nil,
+      global_service: nil,
+      instance_id: nil,
+      availability_zone: nil
+    )
       @mi_env = environment
+      @ipv4 = ipv4
+      @instance_id = instance_id
+      @availability_zone = availability_zone
+
       if global_service
         @availability_zone = 'us-east-1a'
         @instance_id = global_service

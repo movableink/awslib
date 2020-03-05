@@ -7,9 +7,13 @@ describe MovableInk::AWS do
       allow(aws).to receive(:`).with('ec2metadata --instance-id 2>/dev/null').and_return("")
       allow(aws).to receive(:`).with('ec2metadata --availability-zone 2>/dev/null').and_return("")
 
-
       expect{ aws.instance_id }.to raise_error(MovableInk::AWS::Errors::EC2Required)
       expect{ aws.availability_zone }.to raise_error(MovableInk::AWS::Errors::EC2Required)
+    end
+
+    it 'doesnt raise an error if instance_id is set' do
+      aws = MovableInk::AWS.new(instance_id: 'i-987654321')
+      expect(aws.instance_id).to eq('i-987654321')
     end
   end
 
