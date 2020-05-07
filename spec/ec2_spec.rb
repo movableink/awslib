@@ -38,7 +38,7 @@ describe MovableInk::AWS::EC2 do
     }
 
     it 'will read mi_env from disk when the cache file exists' do
-      f = Tempfile.new
+      f = Tempfile.new('cache')
       f.write('staging')
       f.close
       allow(aws).to receive(:mi_env_cache_file_path).and_return(f.path)
