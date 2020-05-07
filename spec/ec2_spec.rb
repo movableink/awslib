@@ -37,6 +37,14 @@ describe MovableInk::AWS::EC2 do
       ])
     }
 
+    it 'will read mi_env from disk when the cache file exists' do
+      f = Tempfile.new
+      f.write('staging')
+      f.close
+      allow(aws).to receive(:mi_env_cache_file_path).and_return(f.path)
+      expect(aws.mi_env).to eq('staging')
+    end
+
     it "should find the environment from the current instance's tags" do
       ec2.stub_responses(:describe_tags, tag_data)
       allow(aws).to receive(:my_region).and_return('us-east-1')

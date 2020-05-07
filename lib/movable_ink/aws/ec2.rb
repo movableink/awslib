@@ -8,8 +8,16 @@ module MovableInk
         @ec2_client[region] ||= Aws::EC2::Client.new(region: region)
       end
 
+      def mi_env_cache_file_path
+        '/etc/movableink/mi_env'
+      end
+
       def mi_env
-        @mi_env ||= load_mi_env
+        @mi_env ||= if File.exist?(mi_env_cache_file_path)
+          File.read(mi_env_cache_file_path)
+        else
+          load_mi_env
+        end
       end
 
       def load_mi_env
