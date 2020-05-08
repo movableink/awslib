@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    MovableInkAWS (1.0.12)
+    MovableInkAWS (1.0.13)
       aws-sdk-athena (~> 1)
       aws-sdk-autoscaling (~> 1)
       aws-sdk-cloudwatch (~> 1)
