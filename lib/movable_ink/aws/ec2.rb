@@ -14,7 +14,8 @@ module MovableInk
 
       def mi_env
         @mi_env ||= if File.exist?(mi_env_cache_file_path)
-          File.read(mi_env_cache_file_path)
+          value = File.read(mi_env_cache_file_path)
+          value.empty? ? load_mi_env : value
         else
           load_mi_env
         end

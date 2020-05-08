@@ -45,6 +45,19 @@ describe MovableInk::AWS::EC2 do
       expect(aws.mi_env).to eq('staging')
     end
 
+    it 'will read tag data if the cache file is empty' do
+      ec2.stub_responses(:describe_tags, tag_data)
+      allow(aws).to receive(:my_region).and_return('us-east-1')
+      allow(aws).to receive(:instance_id).and_return('i-12345')
+      allow(aws).to receive(:ec2).and_return(ec2)
+
+      f = Tempfile.new('cache')
+      f.write('')
+      f.close
+      allow(aws).to receive(:mi_env_cache_file_path).and_return(f.path)
+      expect(aws.mi_env).to eq('test')
+    end
+
     it "should find the environment from the current instance's tags" do
       ec2.stub_responses(:describe_tags, tag_data)
       allow(aws).to receive(:my_region).and_return('us-east-1')
