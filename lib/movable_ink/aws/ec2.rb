@@ -29,23 +29,12 @@ module MovableInk
         raise MovableInk::AWS::Errors::NoEnvironmentTagError
       end
 
-      def thopter_filter
-        [{
-          name: 'tag:mi:roles',
-          values: ['*thopter*']
-        },
-        {
-          name: 'tag:mi:env',
-          values: [mi_env]
-        },
-        {
-          name: 'instance-state-name',
-          values: ['running']
-        }]
-      end
-
       def thopter_instance
-        @thopter_instance ||= load_all_instances('us-east-1', filter: thopter_filter)
+        @thopter_instance ||= all_instances(region: 'us-east-1').select do |instance|
+          instance.tags.select{ |tag| tag.key == 'mi:roles' }.detect do |tag|
+            tag.value.include?('thopter')
+          end
+        end
       end
 
       def all_instances(region: my_region, no_filter: false)
