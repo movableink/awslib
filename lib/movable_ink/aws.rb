@@ -59,6 +59,7 @@ module MovableInk
           return yield
         rescue Aws::EC2::Errors::RequestLimitExceeded,
                Aws::EC2::Errors::ResourceAlreadyAssociated,
+               Aws::EC2::Errors::Unavailable,
                Aws::SNS::Errors::ThrottledException,
                Aws::AutoScaling::Errors::ThrottledException,
                Aws::S3::Errors::SlowDown,
