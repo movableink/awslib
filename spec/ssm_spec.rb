@@ -82,6 +82,8 @@ describe MovableInk::AWS::SSM do
       allow(aws).to receive(:ssm_client).and_return(1)
       allow(aws).to receive(:ssm_client_failover).and_return(2)
       allow(aws).to receive(:notify_and_sleep).and_return(nil)
+      allow(aws).to receive(:notify_slack).and_return(nil)
+      allow(STDOUT).to receive(:puts).and_return(nil)
 
       results = []
       calls = 0

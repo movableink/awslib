@@ -42,9 +42,9 @@ describe MovableInk::AWS do
         ec2 = Aws::EC2::Client.new(stub_responses: true)
         ec2.stub_responses(:describe_instances, 'RequestLimitExceeded')
 
-        expect(aws).to receive(:notify_slack).exactly(9).times
+        expect(aws).to receive(:notify_slack).exactly(10).times
         expect(aws).to receive(:sleep).exactly(9).times.and_return(true)
-        expect(STDOUT).to receive(:puts).exactly(9).times
+        expect(STDOUT).to receive(:puts).exactly(10).times
 
         aws.run_with_backoff { ec2.describe_instances } rescue nil
       end
@@ -64,9 +64,9 @@ describe MovableInk::AWS do
         ec2 = Aws::EC2::Client.new(stub_responses: true)
         ec2.stub_responses(:describe_instances, 'RequestLimitExceeded')
 
-        expect(aws).to receive(:notify_slack).exactly(1).times
+        expect(aws).to receive(:notify_slack).exactly(2).times
         expect(aws).to receive(:sleep).exactly(9).times.and_return(true)
-        expect(STDOUT).to receive(:puts).exactly(1).times
+        expect(STDOUT).to receive(:puts).exactly(2).times
 
         aws.run_with_backoff(quiet: true) { ec2.describe_instances } rescue nil
       end
@@ -77,6 +77,8 @@ describe MovableInk::AWS do
         ec2.stub_responses(:describe_instances, 'RequestLimitExceeded')
 
         expect(aws).to receive(:notify_and_sleep).exactly(9).times
+        expect(aws).to receive(:notify_slack).exactly(1).times
+        expect(STDOUT).to receive(:puts).exactly(1).times
         expect{ aws.run_with_backoff { ec2.describe_instances } }.to raise_error(MovableInk::AWS::Errors::FailedWithBackoff)
       end
     end

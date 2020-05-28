@@ -77,7 +77,7 @@ module MovableInk
             notify_and_sleep(sleep_time, $!.class)
           end
         rescue Aws::Errors::ServiceError => e
-          message = "#{e.class}: #{e.message}\nFrom #{$0}\n```\n#{e.backtrace.first(3).gsub("`","'")}\n```"
+          message = "#{e.class}: #{e.message}\nFrom #{$0}\n```\n#{e.backtrace.first(3).join("\n").gsub("`","'")}\n```"
           notify_slack(subject: 'Unhandled AWS API Error', message: message)
           puts message
           raise MovableInk::AWS::Errors::ServiceError
