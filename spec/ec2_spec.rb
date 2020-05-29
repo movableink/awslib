@@ -183,7 +183,28 @@ describe MovableInk::AWS::EC2 do
     context "instances" do
       let(:my_availability_zone) { 'us-east-1a' }
       let(:other_availability_zone) { 'us-east-1b' }
-      let(:instance_data) { ec2.stub_data(:describe_instances, reservations: [
+      let(:single_role_instance_data) { ec2.stub_data(:describe_instances, reservations: [
+        instances: [
+          {
+            tags: [
+              {
+                key: 'mi:name',
+                value: 'instance4'
+              },
+              {
+                key: 'mi:roles',
+                value: 'app_db_replica'
+              }
+            ],
+            instance_id: 'i-zyx987',
+            private_ip_address: '10.0.0.4',
+            placement: {
+              availability_zone: other_availability_zone
+            }
+          }
+        ]
+      ])}
+      let(:all_roles_instance_data) { ec2.stub_data(:describe_instances, reservations: [
         instances: [
           {
             tags: [
@@ -257,7 +278,13 @@ describe MovableInk::AWS::EC2 do
       }
 
       before(:each) do
-        ec2.stub_responses(:describe_instances, instance_data)
+        ec2.stub_responses(:describe_instances, -> (context) {
+          if (context.params[:filters].length == 2)
+            all_roles_instance_data
+          else
+            single_role_instance_data
+          end
+        })
         allow(aws).to receive(:mi_env).and_return('test')
         allow(aws).to receive(:availability_zone).and_return(my_availability_zone)
         allow(aws).to receive(:my_region).and_return('us-east-1')
@@ -280,6 +307,11 @@ describe MovableInk::AWS::EC2 do
 
       it "returns roles with exactly the specified role" do
         instances = aws.instances(role: 'app_db_replica', exact_match: true)
+        expect(instances.map{|i| i.tags.first.value }).to eq(['instance4'])
+      end
+
+      it "returns roles with exactly the specified role, letting the API to the filtering" do
+        instances = aws.instances(role: 'app_db_replica', exact_match: true, use_cache: false)
         expect(instances.map{|i| i.tags.first.value }).to eq(['instance4'])
       end
 
