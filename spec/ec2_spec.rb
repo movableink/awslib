@@ -183,8 +183,8 @@ describe MovableInk::AWS::EC2 do
     context "instances" do
       let(:my_availability_zone) { 'us-east-1a' }
       let(:other_availability_zone) { 'us-east-1b' }
-      let(:instance_data) { ec2.stub_data(:describe_instances, reservations: [
-        instances: [
+      let(:instances) {
+        [
           {
             tags: [
               {
@@ -252,12 +252,54 @@ describe MovableInk::AWS::EC2 do
             placement: {
               availability_zone: other_availability_zone
             }
+          },
+          {
+            tags: [
+              {
+                key: 'mi:name',
+                value: 'instance5'
+              },
+              {
+                key: 'mi:roles',
+                value: 'app_db'
+              }
+            ],
+            instance_id: 'i-321cba',
+            private_ip_address: '10.0.0.5',
+            placement: {
+              availability_zone: other_availability_zone
+            }
           }
-        ]])
+        ]
+      }
+      let(:single_role_instance_data) { ec2.stub_data(:describe_instances, reservations: [
+        instances: instances.select { |instance|
+          instance[:tags].detect { |tag| tag[:key] == 'mi:roles' && tag[:value] == 'app_db_replica' }
+        }
+      ])}
+      let(:multi_role_instance_data) { ec2.stub_data(:describe_instances, reservations: [
+        instances: instances.select { |instance|
+          instance[:tags].detect { |tag|
+            tag[:key] == 'mi:roles' && ['app_db', 'app_db_replica'].any?(tag[:value])
+          }
+        }
+      ])}
+      let(:all_roles_instance_data) { ec2.stub_data(:describe_instances, reservations: [ instances: instances ])
       }
 
       before(:each) do
-        ec2.stub_responses(:describe_instances, instance_data)
+        ec2.stub_responses(:describe_instances, -> (context) {
+          if (context.params[:filters].length == 2)
+            all_roles_instance_data
+          else
+            role_filter = context.params[:filters].detect { |filter| filter[:name] == 'tag:mi:roles' }
+            if role_filter[:values].length == 1
+              single_role_instance_data
+            else
+              multi_role_instance_data
+            end
+          end
+        })
         allow(aws).to receive(:mi_env).and_return('test')
         allow(aws).to receive(:availability_zone).and_return(my_availability_zone)
         allow(aws).to receive(:my_region).and_return('us-east-1')
@@ -281,6 +323,16 @@ describe MovableInk::AWS::EC2 do
       it "returns roles with exactly the specified role" do
         instances = aws.instances(role: 'app_db_replica', exact_match: true)
         expect(instances.map{|i| i.tags.first.value }).to eq(['instance4'])
+      end
+
+      it "returns roles with exactly the specified role, letting the API to the filtering" do
+        instances = aws.instances(role: 'app_db_replica', use_cache: false)
+        expect(instances.map{|i| i.tags.first.value }).to eq(['instance4'])
+      end
+
+      it "returns roles with any of the specified roles, letting the API to the filtering" do
+        instances = aws.instances(role: 'app_db,app_db_replica', use_cache: false)
+        expect(instances.map{|i| i.tags.first.value }).to eq(['instance4', 'instance5'])
       end
 
       it "excludes requested roles" do

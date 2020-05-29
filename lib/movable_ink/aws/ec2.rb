@@ -91,18 +91,27 @@ module MovableInk
         @me ||= all_instances.select{|instance| instance.instance_id == instance_id}.first rescue nil
       end
 
-      def instances(role:, exclude_roles: [], region: my_region, availability_zone: nil, exact_match: false)
-        instances = all_instances(region: region).select { |instance|
-          instance.tags.select{ |tag| tag.key == 'mi:roles' }.detect { |tag|
-            roles = tag.value.split(/\s*,\s*/)
-            if exact_match
-              roles == [role]
-            else
-              exclude_roles.push('decommissioned')
-              roles.include?(role) && !roles.any? { |role| exclude_roles.include?(role) }
-            end
+      def instances(role:, exclude_roles: [], region: my_region, availability_zone: nil, exact_match: false, use_cache: true)
+        roles = role.split(/\s*,\s*/)
+        if use_cache == false
+          filter = default_filter.push({
+            name: 'tag:mi:roles',
+            values: roles
+          })
+          instances = load_all_instances(my_region, filter: filter)
+        else
+          instances = all_instances(region: region).select { |instance|
+            instance.tags.select{ |tag| tag.key == 'mi:roles' }.detect { |tag|
+              tag_roles = tag.value.split(/\s*,\s*/)
+              if exact_match
+                tag_roles == roles
+              else
+                exclude_roles.push('decommissioned')
+                tag_roles.any? { |tag_role| roles.include?(tag_role) } && !tag_roles.any? { |role| exclude_roles.include?(role) }
+              end
+            }
           }
-        }
+        end
 
         if availability_zone
           instances.select { |instance|
