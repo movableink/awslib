@@ -183,29 +183,8 @@ describe MovableInk::AWS::EC2 do
     context "instances" do
       let(:my_availability_zone) { 'us-east-1a' }
       let(:other_availability_zone) { 'us-east-1b' }
-      let(:single_role_instance_data) { ec2.stub_data(:describe_instances, reservations: [
-        instances: [
-          {
-            tags: [
-              {
-                key: 'mi:name',
-                value: 'instance4'
-              },
-              {
-                key: 'mi:roles',
-                value: 'app_db_replica'
-              }
-            ],
-            instance_id: 'i-zyx987',
-            private_ip_address: '10.0.0.4',
-            placement: {
-              availability_zone: other_availability_zone
-            }
-          }
-        ]
-      ])}
-      let(:all_roles_instance_data) { ec2.stub_data(:describe_instances, reservations: [
-        instances: [
+      let(:instances) {
+        [
           {
             tags: [
               {
@@ -274,7 +253,14 @@ describe MovableInk::AWS::EC2 do
               availability_zone: other_availability_zone
             }
           }
-        ]])
+        ]
+      }
+      let(:single_role_instance_data) { ec2.stub_data(:describe_instances, reservations: [
+        instances: instances.select { |instance|
+          instance[:tags].detect { |tag| tag[:key] == 'mi:roles' && tag[:value] == 'app_db_replica' }
+        }
+      ])}
+      let(:all_roles_instance_data) { ec2.stub_data(:describe_instances, reservations: [ instances: instances ])
       }
 
       before(:each) do
