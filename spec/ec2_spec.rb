@@ -153,18 +153,6 @@ describe MovableInk::AWS::EC2 do
               availability_zone: availability_zone
             }
           },
-          {
-            tags: [
-              {
-                key: 'mi:roles',
-                value: 'something_else'
-              }
-            ],
-            private_ip_address: '10.0.0.3',
-            placement: {
-              availability_zone: availability_zone
-            }
-          }
         ]])
       }
 
