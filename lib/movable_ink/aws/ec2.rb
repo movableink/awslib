@@ -127,15 +127,15 @@ module MovableInk
       end
 
       def statsd_host
-        instance_ip_addresses_by_role(role: 'statsd', availability_zone: availability_zone).sample
+        instance_ip_addresses_by_role(role: 'statsd', availability_zone: availability_zone, use_cache: false).sample
       end
 
       def private_ip_addresses(instances)
         instances.map(&:private_ip_address)
       end
 
-      def instance_ip_addresses_by_role(role:, exclude_roles: [], region: my_region, availability_zone: nil, exact_match: false)
-        private_ip_addresses(instances(role: role, exclude_roles: exclude_roles, region: region, availability_zone: availability_zone, exact_match: exact_match))
+      def instance_ip_addresses_by_role(role:, exclude_roles: [], region: my_region, availability_zone: nil, exact_match: false, use_cache: true)
+        private_ip_addresses(instances(role: role, exclude_roles: exclude_roles, region: region, availability_zone: availability_zone, exact_match: exact_match, use_cache: use_cache))
       end
 
       def instance_ip_addresses_by_role_ordered(role:, exclude_roles: [], region: my_region, exact_match: false)
