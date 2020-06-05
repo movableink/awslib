@@ -2,15 +2,6 @@ require_relative '../lib/movable_ink/aws'
 
 describe MovableInk::AWS do
   context "outside EC2" do
-    it "should raise an error if EC2 is required" do
-      aws = MovableInk::AWS.new
-      allow(aws).to receive(:`).with('ec2metadata --instance-id 2>/dev/null').and_return("")
-      allow(aws).to receive(:`).with('ec2metadata --availability-zone 2>/dev/null').and_return("")
-
-      expect{ aws.instance_id }.to raise_error(MovableInk::AWS::Errors::EC2Required)
-      expect{ aws.availability_zone }.to raise_error(MovableInk::AWS::Errors::EC2Required)
-    end
-
     it 'doesnt raise an error if instance_id is set' do
       aws = MovableInk::AWS.new(instance_id: 'i-987654321')
       expect(aws.instance_id).to eq('i-987654321')
@@ -18,21 +9,9 @@ describe MovableInk::AWS do
   end
 
   context "inside EC2" do
-    it "should call ec2metadata to get the instance ID" do
-      aws = MovableInk::AWS.new
-      expect(aws).to receive(:`).with('ec2metadata --instance-id 2>/dev/null').and_return("i-12345\n")
-      expect(aws.instance_id).to eq('i-12345')
-    end
-
-    it "should call ec2metadata to get the availability zone" do
-      aws = MovableInk::AWS.new
-      expect(aws).to receive(:`).with('ec2metadata --availability-zone 2>/dev/null').and_return("us-east-1a\n")
-      expect(aws.availability_zone).to eq('us-east-1a')
-    end
-
     it "should find the datacenter by region" do
       aws = MovableInk::AWS.new
-      expect(aws).to receive(:`).with('ec2metadata --availability-zone 2>/dev/null').and_return("us-east-1a\n")
+      expect(aws).to receive(:retrieve_metadata).with('placement/availability-zone').and_return("us-east-1a")
       expect(aws.datacenter).to eq('iad')
     end
 

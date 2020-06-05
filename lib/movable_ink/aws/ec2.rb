@@ -63,27 +63,11 @@ module MovableInk
         end
       end
 
-      def instance_id
-        @instance_id ||= begin
-          id = `ec2metadata --instance-id 2>/dev/null`.chomp
-          raise(MovableInk::AWS::Errors::EC2Required) if id.empty?
-          id
-        end
-      end
-
       def instance_tags
         @instance_tags ||= run_with_backoff(quiet: true) do
           ec2.describe_tags({
             filters: [{ name: 'resource-id', values: [instance_id] } ]
           }).tags
-        end
-      end
-
-      def private_ipv4
-        @ipv4 ||= begin
-          ipv4 = `ec2metadata --local-ipv4 2>/dev/null`.chomp
-          raise(MovableInk::AWS::Errors::EC2Required) if ipv4.empty?
-          ipv4
         end
       end
 
