@@ -4,15 +4,9 @@ describe MovableInk::AWS::EC2 do
   context "outside EC2" do
     it "should raise an error if trying to load mi_env outside of EC2" do
       aws = MovableInk::AWS.new
-      allow(aws).to receive(:`).with('ec2metadata --instance-id 2>/dev/null').and_return("")
-      allow(aws).to receive(:`).with('ec2metadata --availability-zone 2>/dev/null').and_return("")
+      allow(aws).to receive(:retrieve_metadata).with('instance-id').and_return("")
+      allow(aws).to receive(:retrieve_metadata).with('placement/availability-zone').and_return("")
       expect{ aws.mi_env }.to raise_error(MovableInk::AWS::Errors::EC2Required)
-    end
-
-    it 'should raise an error if trying to load private_ipv4 outside of EC2' do
-      aws = MovableInk::AWS.new
-      allow(aws).to receive(:`).with('ec2metadata --local-ipv4 2>/dev/null').and_return('')
-      expect{ aws.private_ipv4 }.to raise_error(MovableInk::AWS::Errors::EC2Required)
     end
 
     it "should use the provided environment" do
@@ -65,12 +59,6 @@ describe MovableInk::AWS::EC2 do
       allow(aws).to receive(:ec2).and_return(ec2)
 
       expect(aws.mi_env).to eq('test')
-    end
-
-    it 'calls ec2metadata to get the private ipv4 address of the instance' do
-      aws = MovableInk::AWS.new
-      allow(aws).to receive(:`).with('ec2metadata --local-ipv4 2>/dev/null').and_return('10.0.0.1')
-      expect(aws.private_ipv4).to eq('10.0.0.1')
     end
 
     context 'instance_tags' do

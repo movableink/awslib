@@ -1,4 +1,5 @@
 require_relative 'aws/errors'
+require_relative 'aws/metadata'
 require_relative 'aws/ec2'
 require_relative 'aws/sns'
 require_relative 'aws/autoscaling'
@@ -13,6 +14,7 @@ require 'aws-sdk-cloudwatch'
 
 module MovableInk
   class AWS
+    include Metadata
     include EC2
     include SNS
     include Autoscaling
@@ -91,14 +93,6 @@ module MovableInk
 
     def regions
       self.class.regions
-    end
-
-    def availability_zone
-      @availability_zone ||= begin
-        az = `ec2metadata --availability-zone 2>/dev/null`.chomp
-        raise(MovableInk::AWS::Errors::EC2Required) if az.empty?
-        az
-      end
     end
 
     def my_region
