@@ -82,7 +82,7 @@ module MovableInk
             name: 'tag:mi:roles',
             values: roles
           })
-          instances = load_all_instances(my_region, filter: filter)
+          instances = load_all_instances(region, filter: filter)
         else
           instances = all_instances(region: region).select { |instance|
             instance.tags.select{ |tag| tag.key == 'mi:roles' }.detect { |tag|
