@@ -63,6 +63,7 @@ module MovableInk
                Aws::EC2::Errors::ResourceAlreadyAssociated,
                Aws::EC2::Errors::Unavailable,
                Aws::SNS::Errors::ThrottledException,
+               Aws::AutoScaling::Errors::Throttling,
                Aws::AutoScaling::Errors::ThrottledException,
                Aws::S3::Errors::SlowDown,
                Aws::Route53::Errors::Throttling,
