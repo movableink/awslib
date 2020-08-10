@@ -7,6 +7,7 @@ require_relative 'aws/route53'
 require_relative 'aws/ssm'
 require_relative 'aws/athena'
 require_relative 'aws/s3'
+require_relative 'aws/eks'
 require_relative 'aws/elasticache'
 require_relative 'aws/api_gateway'
 require 'aws-sdk-cloudwatch'
@@ -24,6 +25,7 @@ module MovableInk
     include S3
     include ElastiCache
     include ApiGateway
+    include EKS
 
     class << self
       def regions
