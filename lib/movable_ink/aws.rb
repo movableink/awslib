@@ -73,6 +73,7 @@ module MovableInk
                Aws::Route53::Errors::PriorRequestNotComplete,
                Aws::Route53::Errors::ServiceUnavailable,
                Aws::SSM::Errors::TooManyUpdates,
+               Aws::SSM::Errors::ThrottlingException,
                Aws::Athena::Errors::ThrottlingException,
                MovableInk::AWS::Errors::NoEnvironmentTagError
           sleep_time = (num+1)**2 + rand(10)
