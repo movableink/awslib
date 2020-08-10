@@ -11,9 +11,15 @@ module MovableInk
 
       def generate_kubeconfig(region: my_region, cluster_name:)
         client = eks(region: region)
+
         resp = run_with_backoff do
           client.describe_cluster({ name: cluster_name })
+        rescue Aws::EKS::Errors::ResourceNotFoundException
+          nil
         end
+        # invalid cluster name
+        return '' if resp.nil?
+
         cluster_arn = resp.cluster.arn
         cluster_server_address = resp.cluster.endpoint
         cluster_certificate_authority_data = resp.cluster.certificate_authority.data
