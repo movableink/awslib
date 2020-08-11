@@ -15,10 +15,8 @@ module MovableInk
         resp = run_with_backoff do
           client.describe_cluster({ name: cluster_name })
         rescue Aws::EKS::Errors::ResourceNotFoundException
-          nil
+          return nil
         end
-        # invalid cluster name
-        return '' if resp.nil?
 
         cluster_arn = resp.cluster.arn
         cluster_server_address = resp.cluster.endpoint
