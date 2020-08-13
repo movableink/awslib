@@ -13,9 +13,11 @@ module MovableInk
         client = eks(region: region)
 
         resp = run_with_backoff do
-          client.describe_cluster({ name: cluster_name })
-        rescue Aws::EKS::Errors::ResourceNotFoundException
-          return nil
+          begin
+            client.describe_cluster({ name: cluster_name })
+          rescue Aws::EKS::Errors::ResourceNotFoundException
+            return nil
+          end
         end
 
         cluster_arn = resp.cluster.arn
