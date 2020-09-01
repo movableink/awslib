@@ -64,6 +64,7 @@ module MovableInk
         rescue Aws::EC2::Errors::RequestLimitExceeded,
                Aws::EC2::Errors::ResourceAlreadyAssociated,
                Aws::EC2::Errors::Unavailable,
+               Aws::EKS::Errors::TooManyRequestsException,
                Aws::SNS::Errors::ThrottledException,
                Aws::AutoScaling::Errors::Throttling,
                Aws::AutoScaling::Errors::ThrottledException,
