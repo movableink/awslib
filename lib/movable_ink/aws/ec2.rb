@@ -9,13 +9,13 @@ module MovableInk
       end
 
       def mi_env_cache_file_path
-        '/etc/movableink/mi_env'
+        '/etc/movableink/environments.json'
       end
 
       def mi_env
         @mi_env ||= if File.exist?(mi_env_cache_file_path)
-          value = File.read(mi_env_cache_file_path)
-          value.empty? ? load_mi_env : value
+          environments = JSON.parse(File.read(mi_env_cache_file_path))
+          environments[my_region] || load_mi_env
         else
           load_mi_env
         end
