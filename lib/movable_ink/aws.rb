@@ -66,6 +66,7 @@ module MovableInk
                Aws::EC2::Errors::Unavailable,
                Aws::EKS::Errors::TooManyRequestsException,
                Aws::SNS::Errors::ThrottledException,
+               Aws::SNS::Errors::Throttling,
                Aws::AutoScaling::Errors::Throttling,
                Aws::AutoScaling::Errors::ThrottledException,
                Aws::S3::Errors::SlowDown,
