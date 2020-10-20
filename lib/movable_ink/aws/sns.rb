@@ -11,19 +11,11 @@ module MovableInk
       end
 
       def sns_slack_topic_arn
-        @sns_slack_topic_arn ||= run_with_backoff do
-          sns_topics.each do |topic|
-            return topic.topic_arn if topic.topic_arn.include? "slack-aws-alerts"
-          end
-        end
+        @sns_slack_topic_arn ||= sns_topics.detect { |topic| topic.topic_arn.include? "slack-aws-alerts" }.topic_arn rescue nil
       end
 
       def sns_pagerduty_topic_arn
-        @sns_pagerduty_topic_arn ||= run_with_backoff do
-          sns_topics.each do |topic|
-            return topic.topic_arn if topic.topic_arn.include? "pagerduty-custom-alerts"
-          end
-        end
+        @sns_pagerduty_topic_arn ||= sns_topics.detect { |topic| topic.topic_arn.include? "pagerduty-custom-alerts" }.topic_arn rescue nil
       end
 
       def sns_topics
