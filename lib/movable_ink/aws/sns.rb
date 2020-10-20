@@ -11,29 +11,28 @@ module MovableInk
       end
 
       def sns_slack_topic_arn
-        run_with_backoff do
-          sns.list_topics.each do |resp|
-            resp.topics.each do |topic|
-              return topic.topic_arn if topic.topic_arn.include? "slack-aws-alerts"
-            end
+        @sns_slack_topic_arn ||= run_with_backoff do
+          sns_topics.each do |topic|
+            return topic.topic_arn if topic.topic_arn.include? "slack-aws-alerts"
           end
         end
       end
 
       def sns_pagerduty_topic_arn
-        run_with_backoff do
-          sns.list_topics.each do |resp|
-            resp.topics.each do |topic|
-              return topic.topic_arn if topic.topic_arn.include? "pagerduty-custom-alerts"
-            end
+        @sns_pagerduty_topic_arn ||= run_with_backoff do
+          sns_topics.each do |topic|
+            return topic.topic_arn if topic.topic_arn.include? "pagerduty-custom-alerts"
           end
         end
       end
 
+      def sns_topics
+        @sns_topics ||= run_with_backoff { sns.list_topics.flat_map(&:topics) }
+      end
+
       def notify_and_sleep(seconds, error_class)
         message = "Throttled by AWS. Sleeping #{seconds} seconds, (#{error_class})"
-        notify_slack(subject: 'API Throttled',
-                     message: message)
+        notify_slack(subject: 'API Throttled', message: message)
         puts message
         sleep seconds
       end
