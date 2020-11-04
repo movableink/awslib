@@ -112,7 +112,7 @@ module MovableInk
           raise MovableInk::AWS::Errors::RoleNameRequiredError
         end
 
-        if role.include? '_'
+        if role.include?('_')
           raise MovableInk::AWS::Errors::RoleNameInvalidError
         end
 
