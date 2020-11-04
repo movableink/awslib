@@ -422,7 +422,7 @@ describe MovableInk::AWS::EC2 do
         allow(miaws).to receive(:my_region).and_return('us-east-1')
 
         json = JSON.generate(consul_app_service_instances)
-        stub_request(:get, "https://localhost:8501/v1/catalog/service/app?dc=#{my_datacenter}").
+        stub_request(:get, "https://localhost:8501/v1/catalog/service/app?dc=#{my_datacenter}&stale=true&cached=true").
          with(
             headers: {
             'Accept'=>'*/*',
@@ -435,7 +435,7 @@ describe MovableInk::AWS::EC2 do
         expect(app_instances.map{|i| i.tags.first[:value]}).to eq(['app_instance1', 'app_instance2'])
 
         json = JSON.generate(consul_ojos_service_instances)
-        stub_request(:get, "https://localhost:8501/v1/catalog/service/ojos?dc=#{my_datacenter}").
+        stub_request(:get, "https://localhost:8501/v1/catalog/service/ojos?dc=#{my_datacenter}&stale=true&cached=true").
          with(
            headers: {
           'Accept'=>'*/*',
@@ -453,7 +453,7 @@ describe MovableInk::AWS::EC2 do
         allow(miaws).to receive(:my_region).and_return('us-east-1')
 
         json = JSON.generate(consul_ojos_service_instances)
-        stub_request(:get, "https://localhost:8501/v1/catalog/service/ojos?dc=iad").
+        stub_request(:get, "https://localhost:8501/v1/catalog/service/ojos?dc=iad&stale=true&cached=true").
          with(
             headers: {
             'Accept'=>'*/*',
