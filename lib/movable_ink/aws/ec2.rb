@@ -76,82 +76,90 @@ module MovableInk
         @me ||= all_instances.select{|instance| instance.instance_id == instance_id}.first rescue nil
       end
 
+      def instances_with_ec2_discovery(role:, exclude_roles: [], region: my_region, availability_zone: nil, exact_match: false, use_cache: true)
+        roles = role.split(/\s*,\s*/)
+        if use_cache == false
+          filter = default_filter.push({
+            name: 'tag:mi:roles',
+            values: roles
+          })
+          instances = load_all_instances(region, filter: filter)
+        else
+          instances = all_instances(region: region).select { |instance|
+            instance.tags.select{ |tag| tag.key == 'mi:roles' }.detect { |tag|
+              tag_roles = tag.value.split(/\s*,\s*/)
+              if exact_match
+                tag_roles == roles
+              else
+                exclude_roles.push('decommissioned')
+                tag_roles.any? { |tag_role| roles.include?(tag_role) } && !tag_roles.any? { |role| exclude_roles.include?(role) }
+              end
+            }
+          }
+        end
+
+        if availability_zone
+          instances.select { |instance|
+            instance.placement.availability_zone == availability_zone
+          }
+        else
+          instances
+        end
+      end
+
+      def instances_with_consul_discovery(role:, region: my_region, availability_zone: nil)
+        if role == nil || role == ''
+          raise MovableInk::AWS::Errors::RoleNameRequiredError
+        end
+
+        if role.include? '_'
+          raise MovableInk::AWS::Errors::RoleNameInvalidError
+        end
+
+        Diplomat.configure do |config|
+          config.url = "https://localhost:8501"
+          config.options = { ssl: { verify: false } }
+        end
+
+        consul_instances = Diplomat::Service.get(role, :all, { :dc => datacenter(region) }).map { |node|
+          OpenStruct.new (
+            {
+            private_ip_address:  node.Address,
+            instance_id: node.NodeMeta['instance_id'],
+            tags: [
+              {
+                key: 'Name',
+                value: node.Node
+              },
+              {
+                key: 'mi:roles',
+                value: node.NodeMeta['mi_roles']
+              },
+              {
+                key: 'mi:monitoring_roles',
+                value: node.NodeMeta['mi_monitoring_roles']
+              }
+            ],
+            placement: {
+              availability_zone: node.NodeMeta['availability_zone']
+            }
+          })
+        }
+
+        if availability_zone
+          consul_instances.select { |consul_instance|
+            consul_instance.placement[:availability_zone] == availability_zone
+          }
+        else
+          consul_instances
+        end
+      end
+
       def instances(role:, exclude_roles: [], region: my_region, availability_zone: nil, exact_match: false, use_cache: true, discovery_type: 'ec2')
         if discovery_type == 'ec2'
-          roles = role.split(/\s*,\s*/)
-          if use_cache == false
-            filter = default_filter.push({
-              name: 'tag:mi:roles',
-              values: roles
-            })
-            instances = load_all_instances(region, filter: filter)
-          else
-            instances = all_instances(region: region).select { |instance|
-              instance.tags.select{ |tag| tag.key == 'mi:roles' }.detect { |tag|
-                tag_roles = tag.value.split(/\s*,\s*/)
-                if exact_match
-                  tag_roles == roles
-                else
-                  exclude_roles.push('decommissioned')
-                  tag_roles.any? { |tag_role| roles.include?(tag_role) } && !tag_roles.any? { |role| exclude_roles.include?(role) }
-                end
-              }
-            }
-          end
-
-          if availability_zone
-            instances.select { |instance|
-              instance.placement.availability_zone == availability_zone
-            }
-          else
-            instances
-          end
+          instances_with_ec2_discovery(role: role, exclude_roles: exclude_roles, region: region, availability_zone: availability_zone, exact_match: exact_match, use_cache: use_cache)
         elsif discovery_type == 'consul'
-          if role == nil || role == ''
-            raise MovableInk::AWS::Errors::RoleNameRequiredError
-          end
-
-          if role.include? '_'
-            raise MovableInk::AWS::Errors::RoleNameInvalidError
-          end
-
-          Diplomat.configure do |config|
-            config.url = "https://localhost:8501"
-            config.options = { ssl: { verify: false } }
-          end
-
-          consul_instances = Diplomat::Service.get(role, :all, { :dc => datacenter(region) }).map { |node|
-            OpenStruct.new (
-              {
-              private_ip_address:  node.Address,
-              instance_id: node.NodeMeta['instance_id'],
-              tags: [
-                {
-                  key: 'Name',
-                  value: node.Node
-                },
-                {
-                  key: 'mi:roles',
-                  value: node.NodeMeta['mi_roles']
-                },
-                {
-                  key: 'mi:monitoring_roles',
-                  value: node.NodeMeta['mi_monitoring_roles']
-                }
-              ],
-              placement: {
-                availability_zone: node.NodeMeta['availability_zone']
-              }
-            })
-          }
-
-          if availability_zone
-            consul_instances.select { |consul_instance|
-              consul_instance.placement[:availability_zone] == availability_zone
-            }
-          else
-            consul_instances
-          end
+          instances_with_consul_discovery(role: role, region: region, availability_zone: availability_zone)
         else
           raise MovableInk::AWS::Errors::InvalidDiscoveryTypeError
         end
