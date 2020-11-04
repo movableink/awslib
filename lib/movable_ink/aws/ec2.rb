@@ -121,7 +121,7 @@ module MovableInk
           config.options = { ssl: { verify: false } }
         end
 
-        consul_instances = Diplomat::Service.get(role, :all, { :dc => datacenter(region), :stale => true, :cached => true }).map { |node|
+        consul_instances = Diplomat::Service.get(role, :all, { :dc => datacenter(region: region), :stale => true, :cached => true }).map { |node|
           OpenStruct.new (
             {
             private_ip_address:  node.Address,

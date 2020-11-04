@@ -405,7 +405,6 @@ describe MovableInk::AWS::EC2 do
         allow(aws).to receive(:mi_env).and_return('test')
         allow(aws).to receive(:availability_zone).and_return(my_availability_zone)
         allow(aws).to receive(:my_region).and_return('us-east-1')
-        allow(aws).to receive(:datacenter).and_return('iad')
         allow(aws).to receive(:ec2).and_return(ec2)
       end
 
