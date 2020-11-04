@@ -1,4 +1,5 @@
 require_relative '../lib/movable_ink/aws'
+require 'webmock/rspec'
 
 describe MovableInk::AWS::EC2 do
   context "outside EC2" do
@@ -21,6 +22,7 @@ describe MovableInk::AWS::EC2 do
   end
 
   context "inside EC2" do
+    WebMock.allow_net_connect!
     let(:aws) { MovableInk::AWS.new }
     let(:ec2) { Aws::EC2::Client.new(stub_responses: true) }
     let(:tag_data) { ec2.stub_data(:describe_tags, tags: [
@@ -302,6 +304,166 @@ describe MovableInk::AWS::EC2 do
       it "excludes requested roles" do
         instances = aws.instances(role: 'app_db_replica', exclude_roles: ['db'])
         expect(instances.map{|i| i.tags.first.value }).to eq(['instance1', 'instance4'])
+      end
+    end
+
+    context "instances with consul discovery" do
+      let(:my_availability_zone) { 'us-east-1a' }
+      let(:my_datacenter) { 'iad' }
+      let(:other_availability_zone) { 'us-east-1b' }
+      let(:consul_app_service_instances) {
+        [
+          {
+            Node: 'app_instance1',
+            Address: '10.0.0.1',
+            Datacenter: my_datacenter,
+            NodeMeta:
+            {
+              availability_zone: my_availability_zone,
+              instance_id: 'i-12345',
+              mi_monitoring_roles: 'app',
+              mi_roles: 'app'
+            },
+            ServiceID: 'app',
+            ServiceName: 'app',
+            ServiceTags: ['foo', 'bar'],
+            ServicePort: 80,
+          },
+          {
+            Node: 'app_instance2',
+            Address: '10.0.0.2',
+            Datacenter: my_datacenter,
+            NodeMeta:
+            {
+              availability_zone: my_availability_zone,
+              instance_id: 'i-54321',
+              mi_monitoring_roles: 'app',
+              mi_roles: 'app'
+            },
+            ServiceID: 'app',
+            ServiceName: 'app',
+            ServiceTags: ['foo', 'bar'],
+            ServicePort: 80,
+          }
+        ]
+      }
+
+      let(:consul_ojos_service_instances) {
+        [
+          {
+            Node: 'ojos_instance1',
+            Address: '10.0.0.3',
+            Datacenter: my_datacenter,
+            NodeMeta:
+            {
+              availability_zone: my_availability_zone,
+              instance_id: 'i-123abc',
+              mi_monitoring_roles: 'ojos',
+              mi_roles: 'ojos'
+            },
+            ServiceID: 'ojos',
+            ServiceName: 'ojos',
+            ServiceTags: ['foo', 'bar'],
+            ServicePort: 2702,
+          },
+          {
+            Node: 'ojos_instance2',
+            Address: '10.0.0.4',
+            Datacenter: my_datacenter,
+            NodeMeta:
+            {
+              availability_zone: other_availability_zone,
+              instance_id: 'i-zyx987',
+              mi_monitoring_roles: 'ojos',
+              mi_roles: 'ojos'
+            },
+            ServiceID: 'ojos',
+            ServiceName: 'ojos',
+            ServiceTags: ['foo', 'bar'],
+            ServicePort: 2702,
+          },
+          {
+            Node: 'ojos_instance3',
+            Address: '10.0.0.5',
+            Datacenter: my_datacenter,
+            NodeMeta:
+            {
+              availability_zone: other_availability_zone,
+              instance_id: 'i-987654',
+              mi_monitoring_roles: 'ojos',
+              mi_roles: 'ojos'
+            },
+            ServiceID: 'ojos',
+            ServiceName: 'ojos',
+            ServiceTags: ['foo', 'bar'],
+            ServicePort: 2702,
+          }
+        ]
+      }
+
+      before(:each) do
+        allow(aws).to receive(:mi_env).and_return('test')
+        allow(aws).to receive(:availability_zone).and_return(my_availability_zone)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:datacenter).and_return('iad')
+        allow(aws).to receive(:ec2).and_return(ec2)
+      end
+
+      it "returns an error if no role is defined" do
+        expect{ aws.instances(role: nil, discovery_type: 'consul') }.to raise_error(MovableInk::AWS::Errors::RoleNameRequiredError)
+      end
+
+      it "returns an error if an invalid role is passed" do
+        expect{ aws.instances(role: 'asset_proxy', discovery_type: 'consul') }.to raise_error(MovableInk::AWS::Errors::RoleNameInvalidError)
+      end
+
+      it "returns all instances matching a consul service" do
+        miaws = double(MovableInk::AWS)
+        allow(miaws).to receive(:my_region).and_return('us-east-1')
+
+        json = JSON.generate(consul_app_service_instances)
+        stub_request(:get, "https://localhost:8501/v1/catalog/service/app?dc=#{my_datacenter}").
+         with(
+            headers: {
+            'Accept'=>'*/*',
+            'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'User-Agent'=>'Faraday v1.0.1'
+           }).
+         to_return(status: 200, body: json, headers: {})
+
+        app_instances = aws.instances(role: 'app', discovery_type: 'consul')
+        expect(app_instances.map{|i| i.tags.first[:value]}).to eq(['app_instance1', 'app_instance2'])
+
+        json = JSON.generate(consul_ojos_service_instances)
+        stub_request(:get, "https://localhost:8501/v1/catalog/service/ojos?dc=#{my_datacenter}").
+         with(
+           headers: {
+          'Accept'=>'*/*',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Faraday v1.0.1'
+           }).
+         to_return(status: 200, body: json, headers: {})
+
+        ojos_instances = aws.instances(role: 'ojos', discovery_type: 'consul')
+        expect(ojos_instances.map{|i| i.tags.first[:value ]}).to eq(['ojos_instance1', 'ojos_instance2', 'ojos_instance3'])
+      end
+
+      it "returns all instances matching a consul service filtered by availability_zone" do
+        miaws = double(MovableInk::AWS)
+        allow(miaws).to receive(:my_region).and_return('us-east-1')
+
+        json = JSON.generate(consul_ojos_service_instances)
+        stub_request(:get, "https://localhost:8501/v1/catalog/service/ojos?dc=iad").
+         with(
+            headers: {
+            'Accept'=>'*/*',
+            'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'User-Agent'=>'Faraday v1.0.1'
+           }).
+         to_return(status: 200, body: json, headers: {})
+
+        ojos_instances = aws.instances(role: 'ojos', availability_zone: other_availability_zone, discovery_type: 'consul')
+        expect(ojos_instances.map{|i| i.tags.first[:value]}).to eq(['ojos_instance2', 'ojos_instance3'])
       end
     end
 
