@@ -121,38 +121,42 @@ module MovableInk
           config.options = { ssl: { verify: false } }
         end
 
-        consul_instances = Diplomat::Service.get(role, :all, { :dc => datacenter(region: region), :stale => true, :cached => true }).map { |node|
+        consul_service_options = Hash.new
+
+        consul_service_options[:dc] = datacenter(region: region)
+        consul_service_options[:stale] = true
+        consul_service_options[:cached] = true
+        consul_service_options[:passing] = true
+
+        unless availability_zone == nil
+          consul_service_options[:node_meta] = "availability_zone:#{availability_zone}"
+        else
+        end
+
+        Diplomat::Health.service(role, consul_service_options).map { |endpoint|
           OpenStruct.new (
-            {
-            private_ip_address:  node.Address,
-            instance_id: node.NodeMeta['instance_id'],
+          {
+            private_ip_address: endpoint.Node['Address'],
+            instance_id: endpoint.Node['Meta']['instance_id'],
             tags: [
               {
                 key: 'Name',
-                value: node.Node
+                value: endpoint.Node['Node']
               },
               {
                 key: 'mi:roles',
-                value: node.NodeMeta['mi_roles']
+                value: endpoint.Node['Meta']['mi_roles']
               },
               {
                 key: 'mi:monitoring_roles',
-                value: node.NodeMeta['mi_monitoring_roles']
+                value: endpoint.Node['Meta']['mi_monitoring_roles']
               }
             ],
             placement: {
-              availability_zone: node.NodeMeta['availability_zone']
+              availability_zone: endpoint.Node['Meta']['availability_zone']
             }
           })
         }
-
-        if availability_zone
-          consul_instances.select { |consul_instance|
-            consul_instance.placement[:availability_zone] == availability_zone
-          }
-        else
-          consul_instances
-        end
       end
 
       def instances(role:, exclude_roles: [], region: my_region, availability_zone: nil, exact_match: false, use_cache: true, discovery_type: 'ec2')
