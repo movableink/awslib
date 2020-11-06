@@ -128,10 +128,7 @@ module MovableInk
         consul_service_options[:cached] = true
         consul_service_options[:passing] = true
 
-        unless availability_zone == nil
-          consul_service_options[:node_meta] = "availability_zone:#{availability_zone}"
-        else
-        end
+        consul_service_options[:node_meta] = "availability_zone:#{availability_zone}" unless availability_zone.nil?
 
         Diplomat::Health.service(role, consul_service_options).map { |endpoint|
           OpenStruct.new (

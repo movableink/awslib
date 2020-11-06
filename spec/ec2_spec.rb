@@ -313,12 +313,11 @@ describe MovableInk::AWS::EC2 do
       let(:other_availability_zone) { 'us-east-1b' }
       let(:consul_app_service_instances) {
         [{
-            Node:{
+            Node: {
               Node: 'app_instance1',
               Address: '10.0.0.1',
               Datacenter: my_datacenter,
-              Meta:
-              {
+              Meta: {
                 availability_zone: my_availability_zone,
                 instance_id: 'i-12345',
                 mi_monitoring_roles: 'app',
@@ -335,8 +334,7 @@ describe MovableInk::AWS::EC2 do
               Node: 'app_instance2',
               Address: '10.0.0.2',
               Datacenter: my_datacenter,
-              Meta:
-              {
+              Meta: {
                 availability_zone: my_availability_zone,
                 instance_id: 'i-54321',
                 mi_monitoring_roles: 'app',
@@ -357,8 +355,7 @@ describe MovableInk::AWS::EC2 do
               Node: 'ojos_instance2',
               Address: '10.0.0.4',
               Datacenter: my_datacenter,
-              Meta:
-              {
+              Meta: {
                 availability_zone: other_availability_zone,
                 instance_id: 'i-zyx987',
                 mi_monitoring_roles: 'ojos',
@@ -375,8 +372,7 @@ describe MovableInk::AWS::EC2 do
               Node: 'ojos_instance3',
               Address: '10.0.0.5',
               Datacenter: my_datacenter,
-              Meta:
-              {
+              Meta: {
                 availability_zone: other_availability_zone,
                 instance_id: 'i-987654',
                 mi_monitoring_roles: 'ojos',
