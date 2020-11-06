@@ -312,93 +312,78 @@ describe MovableInk::AWS::EC2 do
       let(:my_datacenter) { 'iad' }
       let(:other_availability_zone) { 'us-east-1b' }
       let(:consul_app_service_instances) {
-        [
-          {
-            Node: 'app_instance1',
-            Address: '10.0.0.1',
-            Datacenter: my_datacenter,
-            NodeMeta:
-            {
-              availability_zone: my_availability_zone,
-              instance_id: 'i-12345',
-              mi_monitoring_roles: 'app',
-              mi_roles: 'app'
-            },
-            ServiceID: 'app',
-            ServiceName: 'app',
-            ServiceTags: ['foo', 'bar'],
-            ServicePort: 80,
-          },
-          {
-            Node: 'app_instance2',
-            Address: '10.0.0.2',
-            Datacenter: my_datacenter,
-            NodeMeta:
-            {
-              availability_zone: my_availability_zone,
-              instance_id: 'i-54321',
-              mi_monitoring_roles: 'app',
-              mi_roles: 'app'
-            },
-            ServiceID: 'app',
-            ServiceName: 'app',
-            ServiceTags: ['foo', 'bar'],
-            ServicePort: 80,
-          }
-        ]
+        [{
+            Node: {
+              Node: 'app_instance1',
+              Address: '10.0.0.1',
+              Datacenter: my_datacenter,
+              Meta: {
+                availability_zone: my_availability_zone,
+                instance_id: 'i-12345',
+                mi_monitoring_roles: 'app',
+                mi_roles: 'app'
+              },
+              ServiceID: 'app',
+              ServiceName: 'app',
+              ServiceTags: ['foo', 'bar'],
+              ServicePort: 80,
+            }
+        },
+        {
+          Node: {
+              Node: 'app_instance2',
+              Address: '10.0.0.2',
+              Datacenter: my_datacenter,
+              Meta: {
+                availability_zone: my_availability_zone,
+                instance_id: 'i-54321',
+                mi_monitoring_roles: 'app',
+                mi_roles: 'app'
+              },
+              ServiceID: 'app',
+              ServiceName: 'app',
+              ServiceTags: ['foo', 'bar'],
+              ServicePort: 80,
+            }
+       }]
       }
 
       let(:consul_ojos_service_instances) {
         [
-          {
-            Node: 'ojos_instance1',
-            Address: '10.0.0.3',
-            Datacenter: my_datacenter,
-            NodeMeta:
-            {
-              availability_zone: my_availability_zone,
-              instance_id: 'i-123abc',
-              mi_monitoring_roles: 'ojos',
-              mi_roles: 'ojos'
+        {
+            Node: {
+              Node: 'ojos_instance2',
+              Address: '10.0.0.4',
+              Datacenter: my_datacenter,
+              Meta: {
+                availability_zone: other_availability_zone,
+                instance_id: 'i-zyx987',
+                mi_monitoring_roles: 'ojos',
+                mi_roles: 'ojos'
+              },
+              ServiceID: 'ojos',
+              ServiceName: 'ojos',
+              ServiceTags: ['foo', 'bar'],
+              ServicePort: 2702,
             },
-            ServiceID: 'ojos',
-            ServiceName: 'ojos',
-            ServiceTags: ['foo', 'bar'],
-            ServicePort: 2702,
-          },
-          {
-            Node: 'ojos_instance2',
-            Address: '10.0.0.4',
-            Datacenter: my_datacenter,
-            NodeMeta:
-            {
-              availability_zone: other_availability_zone,
-              instance_id: 'i-zyx987',
-              mi_monitoring_roles: 'ojos',
-              mi_roles: 'ojos'
-            },
-            ServiceID: 'ojos',
-            ServiceName: 'ojos',
-            ServiceTags: ['foo', 'bar'],
-            ServicePort: 2702,
-          },
-          {
-            Node: 'ojos_instance3',
-            Address: '10.0.0.5',
-            Datacenter: my_datacenter,
-            NodeMeta:
-            {
-              availability_zone: other_availability_zone,
-              instance_id: 'i-987654',
-              mi_monitoring_roles: 'ojos',
-              mi_roles: 'ojos'
-            },
-            ServiceID: 'ojos',
-            ServiceName: 'ojos',
-            ServiceTags: ['foo', 'bar'],
-            ServicePort: 2702,
-          }
-        ]
+        },
+        {
+            Node: {
+              Node: 'ojos_instance3',
+              Address: '10.0.0.5',
+              Datacenter: my_datacenter,
+              Meta: {
+                availability_zone: other_availability_zone,
+                instance_id: 'i-987654',
+                mi_monitoring_roles: 'ojos',
+                mi_roles: 'ojos'
+              },
+              ServiceID: 'ojos',
+              ServiceName: 'ojos',
+              ServiceTags: ['foo', 'bar'],
+              ServicePort: 2702,
+            }
+        }]
       }
 
       before(:each) do
@@ -421,7 +406,7 @@ describe MovableInk::AWS::EC2 do
         allow(miaws).to receive(:my_region).and_return('us-east-1')
 
         json = JSON.generate(consul_app_service_instances)
-        stub_request(:get, "https://localhost:8501/v1/catalog/service/app?dc=#{my_datacenter}&stale=true&cached=true").
+        stub_request(:get, "https://localhost:8501/v1/health/service/app?cached&dc=#{my_datacenter}&passing&stale").
          with(
             headers: {
             'Accept'=>'*/*',
@@ -434,7 +419,7 @@ describe MovableInk::AWS::EC2 do
         expect(app_instances.map{|i| i.tags.first[:value]}).to eq(['app_instance1', 'app_instance2'])
 
         json = JSON.generate(consul_ojos_service_instances)
-        stub_request(:get, "https://localhost:8501/v1/catalog/service/ojos?dc=#{my_datacenter}&stale=true&cached=true").
+        stub_request(:get, "https://localhost:8501/v1/health/service/ojos?cached&dc=#{my_datacenter}&passing&stale").
          with(
            headers: {
           'Accept'=>'*/*',
@@ -444,7 +429,7 @@ describe MovableInk::AWS::EC2 do
          to_return(status: 200, body: json, headers: {})
 
         ojos_instances = aws.instances(role: 'ojos', discovery_type: 'consul')
-        expect(ojos_instances.map{|i| i.tags.first[:value ]}).to eq(['ojos_instance1', 'ojos_instance2', 'ojos_instance3'])
+        expect(ojos_instances.map{|i| i.tags.first[:value ]}).to eq(['ojos_instance2', 'ojos_instance3'])
       end
 
       it "returns all instances matching a consul service filtered by availability_zone" do
@@ -452,7 +437,7 @@ describe MovableInk::AWS::EC2 do
         allow(miaws).to receive(:my_region).and_return('us-east-1')
 
         json = JSON.generate(consul_ojos_service_instances)
-        stub_request(:get, "https://localhost:8501/v1/catalog/service/ojos?dc=iad&stale=true&cached=true").
+        stub_request(:get, "https://localhost:8501/v1/health/service/ojos?cached&dc=#{my_datacenter}&node-meta=availability_zone:#{other_availability_zone}&passing&stale").
          with(
             headers: {
             'Accept'=>'*/*',
