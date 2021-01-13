@@ -116,18 +116,12 @@ module MovableInk
           raise MovableInk::AWS::Errors::RoleNameInvalidError
         end
 
-        Diplomat.configure do |config|
-          config.url = "https://localhost:8501"
-          config.options = { ssl: { verify: false } }
-        end
-
-        consul_service_options = Hash.new
-
-        consul_service_options[:dc] = datacenter(region: region)
-        consul_service_options[:stale] = true
-        consul_service_options[:cached] = true
-        consul_service_options[:passing] = true
-
+        consul_service_options = {
+          dc: datacenter(region: region),
+          stale: true,
+          cached: true,
+          passing: true,
+        }
         consul_service_options[:node_meta] = "availability_zone:#{availability_zone}" unless availability_zone.nil?
 
         Diplomat::Health.service(role, consul_service_options).map { |endpoint|
