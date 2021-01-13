@@ -10,6 +10,7 @@ require_relative 'aws/s3'
 require_relative 'aws/eks'
 require_relative 'aws/elasticache'
 require_relative 'aws/api_gateway'
+require_relative 'consul/consul'
 require 'aws-sdk-cloudwatch'
 
 
