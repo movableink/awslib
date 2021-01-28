@@ -114,7 +114,7 @@ module MovableInk
 
         # We replace underscores with dashes in the role name in order to comply with
         # consul service naming conventions while still retaining the role name we use
-        # within MI configuration.
+        # within MI configuration
         role.gsub!('_', '-')
 
         consul_service_options = {
