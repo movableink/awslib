@@ -112,9 +112,10 @@ module MovableInk
           raise MovableInk::AWS::Errors::RoleNameRequiredError
         end
 
-        if role.include?('_')
-          raise MovableInk::AWS::Errors::RoleNameInvalidError
-        end
+        # We replace underscores with dashes in the role name in order to comply with
+        # consul service naming conventions while still retaining the role name we use
+        # within MI configuration.
+        role.gsub!('_', '-')
 
         consul_service_options = {
           dc: datacenter(region: region),
