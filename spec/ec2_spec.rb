@@ -397,10 +397,6 @@ describe MovableInk::AWS::EC2 do
         expect{ aws.instances(role: nil, discovery_type: 'consul') }.to raise_error(MovableInk::AWS::Errors::RoleNameRequiredError)
       end
 
-      it "returns an error if an invalid role is passed" do
-        expect{ aws.instances(role: 'asset_proxy', discovery_type: 'consul') }.to raise_error(MovableInk::AWS::Errors::RoleNameInvalidError)
-      end
-
       it "returns all instances matching a consul service" do
         miaws = double(MovableInk::AWS)
         allow(miaws).to receive(:my_region).and_return('us-east-1')
