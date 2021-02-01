@@ -112,11 +112,6 @@ module MovableInk
           raise MovableInk::AWS::Errors::RoleNameRequiredError
         end
 
-        # We replace underscores with dashes in the role name in order to comply with
-        # consul service naming conventions while still retaining the role name we use
-        # within MI configuration
-        role.gsub!('_', '-')
-
         consul_service_options = {
           dc: datacenter(region: region),
           stale: true,
@@ -125,7 +120,10 @@ module MovableInk
         }
         consul_service_options[:node_meta] = "availability_zone:#{availability_zone}" unless availability_zone.nil?
 
-        Diplomat::Health.service(role, consul_service_options).map { |endpoint|
+        # We replace underscores with dashes in the role name in order to comply with
+        # consul service naming conventions while still retaining the role name we use
+        # within MI configuration
+        Diplomat::Health.service(role.gsub('_', '-'), consul_service_options).map { |endpoint|
           OpenStruct.new (
           {
             private_ip_address: endpoint.Node['Address'],
