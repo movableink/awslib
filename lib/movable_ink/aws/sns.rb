@@ -29,42 +29,27 @@ module MovableInk
         sleep seconds
       end
 
-      def notify_nsq_can_not_be_drained
-        notify_slack(subject: 'NSQ not drained',
-                     message: "Unable to drain NSQ for instance <https://#{my_region}.console.aws.amazon.com/ec2/v2/home?region=#{my_region}#Instances:search=#{instance_id};sort=instanceId|#{instance_id}>")
-        notify_pagerduty(region: my_region, instance_id: instance_id)
-      end
-
-      def notify_pagerduty(region:, instance_id:)
-        summary = "Unable to drain NSQ for instance #{instance_id} in region #{region}"
-
-        # the PagerDuty integration key is added to the payload in the AWS integration
-        json_message = {
-          pagerduty: {
-            event_action: 'trigger',
-            payload: {
-              source: 'MovableInkAWS',
-              summary: summary,
-              timestamp: Time.now.utc.iso8601,
-              severity: 'error',
-              component: 'nsq',
-              group: 'nsq',
-              custom_details: {
-                InstanceId: instance_id,
-              },
-            },
-            dedup_key: "nsq-not-draining-#{instance_id}",
-            links: [{
-              href: "https://#{region}.console.aws.amazon.com/ec2/v2/home?region=#{region}#Instances:search=#{instance_id};sort=instanceId",
-              text: 'View Instance'
-            }],
-          }
-        }.to_json
-
+      def send_alert(
+        source: instance_id,
+        links: [],
+        custom_details: {},
+        summary:,
+        dedup_key:
+      )
         run_with_backoff do
-          sns.publish(topic_arn: sns_pagerduty_topic_arn,
-                      subject: "Unable to drain NSQ",
-                      message: json_message)
+          message_json = pd_message_json({
+            source: source,
+            summary: summary,
+            links: links,
+            custom_details: custom_details,
+            dedup_key: dedup_key,
+          })
+
+          sns.publish({
+            topic_arn: sns_pagerduty_topic_arn,
+            subject: summary,
+            message: message_json
+          })
         end
       end
 
@@ -77,6 +62,33 @@ module MovableInk
                       subject: subject.slice(0,99),
                       message: "#{required_info}\n#{message}")
         end
+      end
+
+      private
+
+      def pd_message_json(
+        source:,
+        summary:,
+        links:,
+        custom_details:,
+        dedup_key:
+      )
+        {
+          pagerduty: {
+            event_action: 'trigger',
+            payload: {
+              source: source,
+              summary: summary,
+              timestamp: Time.now.utc.iso8601,
+              severity: 'error',
+              component: source,
+              group: source,
+              custom_details: custom_details,
+            },
+            dedup_key: dedup_key,
+            links: links,
+          }
+        }.to_json
       end
     end
   end
