@@ -47,7 +47,7 @@ describe MovableInk::AWS::SNS do
     allow(aws).to receive(:sns).and_return(sns)
     allow(aws).to receive(:private_ipv4).and_return('10.0.0.1')
 
-    expect(aws.notify_pagerduty(region: 'us-east-1', instance_id: 'i-987654321').message_id).to eq('messageId')
+    expect(aws.send_alert(summary: 'Something bad happened', dedup_key: 'i-987654321').message_id).to eq('messageId')
   end
 
   it "should truncate subjects longer than 100 characters" do

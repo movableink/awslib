@@ -1,3 +1,4 @@
+require_relative 'aws/pager_duty_alert'
 require_relative 'aws/errors'
 require_relative 'aws/metadata'
 require_relative 'aws/ec2'
