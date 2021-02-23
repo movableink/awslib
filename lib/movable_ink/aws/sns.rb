@@ -1,7 +1,6 @@
 require 'time'
 require 'json'
 require 'aws-sdk-sns'
-require_relative 'pager_duty_alert'
 
 module MovableInk
   class AWS
@@ -38,15 +37,19 @@ module MovableInk
         dedup_key:
       )
         run_with_backoff do
-          PagerDutyAlert.new({
-            client: sns,
+          message_json = pd_message_json({
             source: source,
             summary: summary,
             links: links,
             custom_details: custom_details,
             dedup_key: dedup_key,
+          })
+
+          sns.publish({
             topic_arn: sns_pagerduty_topic_arn,
-          }).publish
+            subject: summary,
+            message: message_json
+          })
         end
       end
 
@@ -59,6 +62,33 @@ module MovableInk
                       subject: subject.slice(0,99),
                       message: "#{required_info}\n#{message}")
         end
+      end
+
+      private
+
+      def pd_message_json(
+        source:,
+        summary:,
+        links:,
+        custom_details:,
+        dedup_key:
+      )
+        {
+          pagerduty: {
+            event_action: 'trigger',
+            payload: {
+              source: source,
+              summary: summary,
+              timestamp: Time.now.utc.iso8601,
+              severity: 'error',
+              component: source,
+              group: source,
+              custom_details: custom_details,
+            },
+            dedup_key: dedup_key,
+            links: links,
+          }
+        }.to_json
       end
     end
   end
