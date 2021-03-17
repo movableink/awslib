@@ -124,29 +124,58 @@ module MovableInk
         # consul service naming conventions while still retaining the role name we use
         # within MI configuration
         Diplomat::Health.service(role.gsub('_', '-'), consul_service_options).map { |endpoint|
-          OpenStruct.new (
-          {
-            private_ip_address: endpoint.Node['Address'],
-            instance_id: endpoint.Node['Meta']['instance_id'],
-            tags: [
-              {
-                key: 'Name',
-                value: endpoint.Node['Node']
-              },
-              {
-                key: 'mi:roles',
-                value: endpoint.Node['Meta']['mi_roles']
-              },
-              {
-                key: 'mi:monitoring_roles',
-                value: endpoint.Node['Meta']['mi_monitoring_roles']
-              }
-            ],
-            placement: {
-              availability_zone: endpoint.Node['Meta']['availability_zone']
-            }
-          })
+          if endpoint.Node.dig('Meta', 'external-source') == 'kubernetes'
+            map_k8s_consul_endpoint(endpoint, role)
+          else
+            map_ec2_consul_endpoint(endpoint)
+          end
         }
+      end
+
+      def map_k8s_consul_endpoint(endpoint, role)
+        OpenStruct.new ({
+          private_ip_address: endpoint.Service.dig('Address'),
+          instance_id: nil,
+          tags: [
+            {
+              key: 'Name',
+              value: endpoint.Service.dig('ID')
+            },
+            {
+              key: 'mi:roles',
+              value: role
+            },
+            {
+              key: 'mi:monitoring_roles',
+              value: role
+            }
+          ],
+          placement: { availability_zone: nil }
+        })
+      end
+
+      def map_ec2_consul_endpoint(endpoint)
+        OpenStruct.new ({
+          private_ip_address: endpoint.Node['Address'],
+          instance_id: endpoint.Node['Meta']['instance_id'],
+          tags: [
+            {
+              key: 'Name',
+              value: endpoint.Node['Node']
+            },
+            {
+              key: 'mi:roles',
+              value: endpoint.Node['Meta']['mi_roles']
+            },
+            {
+              key: 'mi:monitoring_roles',
+              value: endpoint.Node['Meta']['mi_monitoring_roles']
+            }
+          ],
+          placement: {
+            availability_zone: endpoint.Node['Meta']['availability_zone']
+          }
+        })
       end
 
       def instances(role:, exclude_roles: [], region: my_region, availability_zone: nil, exact_match: false, use_cache: true, discovery_type: 'ec2')
