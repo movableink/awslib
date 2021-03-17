@@ -386,6 +386,36 @@ describe MovableInk::AWS::EC2 do
         }]
       }
 
+      let(:consul_kubernetes_service_instances) do
+        [
+          {
+            "Node": {
+              "ID": "",
+              "Node": "k8s-sync",
+              "Address": "127.0.0.1",
+              "Datacenter": "my_datacenter",
+              "TaggedAddresses": nil,
+              "Meta": {
+                "external-source": "kubernetes",
+                "CreateIndex": 987654321,
+                "ModifyIndex": 123456789,
+              }
+            },
+            "Service": {
+              "ID": "pod-name-ac8f920827af",
+              "Service": "kubernetes-service-name",
+              "Tags": ["k8s"],
+              "Address": "10.0.0.1",
+              "Port": 8080,
+              "Meta": {
+                "external-source": "kubernetes",
+                "external-k8s-ns": "default",
+              }
+            }
+          }
+        ]
+      end
+
       before(:each) do
         allow(aws).to receive(:mi_env).and_return('test')
         allow(aws).to receive(:availability_zone).and_return(my_availability_zone)
@@ -444,6 +474,33 @@ describe MovableInk::AWS::EC2 do
 
         ojos_instances = aws.instances(role: 'ojos', availability_zone: other_availability_zone, discovery_type: 'consul')
         expect(ojos_instances.map{|i| i.tags.first[:value]}).to eq(['ojos_instance2', 'ojos_instance3'])
+      end
+
+      it "returns backends that are synced from consul-k8s" do
+        miaws = double(MovableInk::AWS)
+        allow(miaws).to receive(:my_region).and_return('us-east-1')
+
+        json = JSON.generate(consul_kubernetes_service_instances)
+        stub_request(:get, "https://localhost:8501/v1/health/service/kubernetes-service-name?cached&dc=#{my_datacenter}&passing&stale")
+          .with({
+            headers: {
+              'Accept'=>'*/*',
+              'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+              'User-Agent'=>'Faraday v1.0.1'
+            }
+          })
+          .to_return(status: 200, body: json, headers: {})
+
+         resp_instances = aws.instances(role: 'kubernetes-service-name', discovery_type: 'consul')
+         backend = resp_instances.first
+         name_tag = backend.tags.find {|t| t[:key] == 'Name' }
+         roles_tag = backend.tags.find {|t| t[:key] == 'mi:roles' }
+
+         expect(name_tag[:value]).to eq('pod-name-ac8f920827af')
+         expect(roles_tag[:value]).to eq('kubernetes-service-name')
+         expect(backend.instance_id).to eq(nil)
+         expect(backend.private_ip_address).to eq('10.0.0.1')
+         expect(backend.private_ip_address).to eq('10.0.0.1')
       end
     end
 
