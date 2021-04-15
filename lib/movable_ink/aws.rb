@@ -103,7 +103,7 @@ module MovableInk
     end
 
     def my_region
-      @my_region ||= availability_zone.chop
+      @my_region ||= ENV['AWS_REGION'].nil? ? availability_zone.chop : ENV['AWS_REGION']
     end
 
     def datacenter(region: my_region)

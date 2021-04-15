@@ -2,16 +2,34 @@ require_relative '../lib/movable_ink/aws'
 
 describe MovableInk::AWS do
   context "outside EC2" do
+    before(:each) do
+      allow_any_instance_of(MovableInk::AWS).to receive(:sleep).and_return(true)
+    end
+
+    after(:each) { ENV['AWS_REGION'] = nil }
+
     it 'doesnt raise an error if instance_id is set' do
       aws = MovableInk::AWS.new(instance_id: 'i-987654321')
       expect(aws.instance_id).to eq('i-987654321')
+    end
+
+    it 'doesnt raise if AWS_REGION is set' do
+      ENV['AWS_REGION'] = 'us-east-1'
+      miaws = MovableInk::AWS.new
+      expect(miaws.my_region).to eq('us-east-1')
+    end
+
+    it 'raises when AWS_REGION is not set and the metadata service is not available' do
+      miaws = MovableInk::AWS.new
+      allow(Net::HTTP).to receive(:start).and_raise(Net::OpenTimeout)
+      expect { miaws.my_region }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
   end
 
   context "inside EC2" do
     it "should find the datacenter by region" do
       aws = MovableInk::AWS.new
-      expect(aws).to receive(:retrieve_metadata).with('placement/availability-zone').and_return("us-east-1a")
+      expect(aws).to receive(:availability_zone).and_return("us-east-1a")
       expect(aws.datacenter).to eq('iad')
     end
 

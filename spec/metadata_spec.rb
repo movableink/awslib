@@ -1,20 +1,22 @@
 require_relative '../lib/movable_ink/aws'
 
 describe MovableInk::AWS::Metadata do
-  context 'outside ec2' do
-    it 'should raise an error if EC2 is required' do
-      aws = MovableInk::AWS.new
-      allow(aws).to receive(:retrieve_metadata).with('instance-id').and_return("")
-      allow(aws).to receive(:retrieve_metadata).with('placement/availability-zone').and_return("")
+  before(:each) do
+    allow_any_instance_of(MovableInk::AWS).to receive(:sleep).and_return(true)
+  end
 
-      expect{ aws.instance_id }.to raise_error(MovableInk::AWS::Errors::EC2Required)
-      expect{ aws.availability_zone }.to raise_error(MovableInk::AWS::Errors::EC2Required)
+  context 'outside ec2' do
+    it 'should raise an error if the metadata service times out' do
+      aws = MovableInk::AWS.new
+      allow(Net::HTTP).to receive(:start).and_raise(Net::OpenTimeout)
+      expect{ aws.instance_id }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
+      expect{ aws.availability_zone }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
 
     it 'should raise an error if trying to load private_ipv4 outside of EC2' do
       aws = MovableInk::AWS.new
-      allow(aws).to receive(:retrieve_metadata).with('local-ipv4').and_return('')
-      expect{ aws.private_ipv4 }.to raise_error(MovableInk::AWS::Errors::EC2Required)
+      allow(Net::HTTP).to receive(:start).and_raise(Net::OpenTimeout)
+      expect{ aws.private_ipv4 }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
   end
 

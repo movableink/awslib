@@ -2,12 +2,15 @@ require_relative '../lib/movable_ink/aws'
 require 'webmock/rspec'
 
 describe MovableInk::AWS::EC2 do
+  before(:each) do
+    allow_any_instance_of(MovableInk::AWS).to receive(:sleep).and_return(true)
+  end
+
   context "outside EC2" do
     it "should raise an error if trying to load mi_env outside of EC2" do
       aws = MovableInk::AWS.new
-      allow(aws).to receive(:retrieve_metadata).with('instance-id').and_return("")
-      allow(aws).to receive(:retrieve_metadata).with('placement/availability-zone').and_return("")
-      expect{ aws.mi_env }.to raise_error(MovableInk::AWS::Errors::EC2Required)
+      allow(Net::HTTP).to receive(:start).and_raise(Net::OpenTimeout)
+      expect{ aws.mi_env }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
 
     it "should use the provided environment" do
