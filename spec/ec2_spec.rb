@@ -9,7 +9,8 @@ describe MovableInk::AWS::EC2 do
   context "outside EC2" do
     it "should raise an error if trying to load mi_env outside of EC2" do
       aws = MovableInk::AWS.new
-      allow(Net::HTTP).to receive(:start).and_raise(Net::OpenTimeout)
+      # stub an error making a request to the metadata api
+      stub_request(:get, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
       expect{ aws.mi_env }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
 
@@ -20,12 +21,16 @@ describe MovableInk::AWS::EC2 do
 
     it "should not find a 'me'" do
       aws = MovableInk::AWS.new
+      # stub an error making a request to the metadata api
+      stub_request(:get, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
       expect(aws.me).to eq(nil)
     end
   end
 
   context "inside EC2" do
-    WebMock.allow_net_connect!
+    before(:each) { WebMock.allow_net_connect! }
+    after(:each) { WebMock.disable_net_connect! }
+
     let(:aws) { MovableInk::AWS.new }
     let(:ec2) { Aws::EC2::Client.new(stub_responses: true) }
     let(:tag_data) { ec2.stub_data(:describe_tags, tags: [

@@ -1,4 +1,5 @@
 require_relative '../lib/movable_ink/aws'
+require 'webmock/rspec'
 
 describe MovableInk::AWS do
   context "outside EC2" do
@@ -21,7 +22,8 @@ describe MovableInk::AWS do
 
     it 'raises when AWS_REGION is not set and the metadata service is not available' do
       miaws = MovableInk::AWS.new
-      allow(Net::HTTP).to receive(:start).and_raise(Net::OpenTimeout)
+      # stub an error making a request to the metadata api
+      stub_request(:get, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
       expect { miaws.my_region }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
   end

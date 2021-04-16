@@ -1,4 +1,5 @@
 require_relative '../lib/movable_ink/aws'
+require 'webmock/rspec'
 
 describe MovableInk::AWS::Metadata do
   before(:each) do
@@ -8,14 +9,16 @@ describe MovableInk::AWS::Metadata do
   context 'outside ec2' do
     it 'should raise an error if the metadata service times out' do
       aws = MovableInk::AWS.new
-      allow(Net::HTTP).to receive(:start).and_raise(Net::OpenTimeout)
+      # stub an error making a request to the metadata api
+      stub_request(:get, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
       expect{ aws.instance_id }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
       expect{ aws.availability_zone }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
 
     it 'should raise an error if trying to load private_ipv4 outside of EC2' do
       aws = MovableInk::AWS.new
-      allow(Net::HTTP).to receive(:start).and_raise(Net::OpenTimeout)
+      # stub an error making a request to the metadata api
+      stub_request(:get, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
       expect{ aws.private_ipv4 }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
   end

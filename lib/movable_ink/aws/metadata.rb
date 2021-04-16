@@ -5,8 +5,6 @@ module MovableInk
     module Metadata
       def http(timeout_seconds: 1)
         @http = begin
-          puts "timeout_seconds: #{timeout_seconds}"
-
           http = Net::HTTP.new("169.254.169.254", 80)
           http.open_timeout = timeout_seconds
           http.read_timeout = timeout_seconds
