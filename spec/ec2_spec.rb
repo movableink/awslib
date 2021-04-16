@@ -2,12 +2,16 @@ require_relative '../lib/movable_ink/aws'
 require 'webmock/rspec'
 
 describe MovableInk::AWS::EC2 do
+  before(:each) do
+    allow_any_instance_of(MovableInk::AWS).to receive(:sleep).and_return(true)
+  end
+
   context "outside EC2" do
     it "should raise an error if trying to load mi_env outside of EC2" do
       aws = MovableInk::AWS.new
-      allow(aws).to receive(:retrieve_metadata).with('instance-id').and_return("")
-      allow(aws).to receive(:retrieve_metadata).with('placement/availability-zone').and_return("")
-      expect{ aws.mi_env }.to raise_error(MovableInk::AWS::Errors::EC2Required)
+      # stub an error making a request to the metadata api
+      stub_request(:get, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
+      expect{ aws.mi_env }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
 
     it "should use the provided environment" do
@@ -17,12 +21,16 @@ describe MovableInk::AWS::EC2 do
 
     it "should not find a 'me'" do
       aws = MovableInk::AWS.new
+      # stub an error making a request to the metadata api
+      stub_request(:get, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
       expect(aws.me).to eq(nil)
     end
   end
 
   context "inside EC2" do
-    WebMock.allow_net_connect!
+    before(:each) { WebMock.allow_net_connect! }
+    after(:each) { WebMock.disable_net_connect! }
+
     let(:aws) { MovableInk::AWS.new }
     let(:ec2) { Aws::EC2::Client.new(stub_responses: true) }
     let(:tag_data) { ec2.stub_data(:describe_tags, tags: [
