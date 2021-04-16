@@ -43,7 +43,7 @@ module MovableInk
       def imds_token(tries: 3)
         tries.times do |num|
           num += 1
-          request = Net::HTTP::Get.new('/latest/api/token')
+          request = Net::HTTP::Put.new('/latest/api/token')
           request['X-aws-ec2-metadata-token-ttl-seconds'] = 120
           response = http(timeout_seconds: num * 3).request(request)
           return response.body
