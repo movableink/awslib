@@ -23,7 +23,7 @@ describe MovableInk::AWS do
     it 'raises when AWS_REGION is not set and the metadata service is not available' do
       miaws = MovableInk::AWS.new
       # stub an error making a request to the metadata api
-      stub_request(:get, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
+      stub_request(:put, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
       expect { miaws.my_region }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
   end

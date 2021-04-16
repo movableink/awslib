@@ -10,7 +10,7 @@ describe MovableInk::AWS::EC2 do
     it "should raise an error if trying to load mi_env outside of EC2" do
       aws = MovableInk::AWS.new
       # stub an error making a request to the metadata api
-      stub_request(:get, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
+      stub_request(:put, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
       expect{ aws.mi_env }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
 
@@ -22,7 +22,7 @@ describe MovableInk::AWS::EC2 do
     it "should not find a 'me'" do
       aws = MovableInk::AWS.new
       # stub an error making a request to the metadata api
-      stub_request(:get, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
+      stub_request(:put, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
       expect(aws.me).to eq(nil)
     end
   end
