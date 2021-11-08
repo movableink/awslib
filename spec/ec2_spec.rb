@@ -482,6 +482,7 @@ describe MovableInk::AWS::EC2 do
 
         ojos_instances = aws.instances(role: 'ojos', availability_zone: other_availability_zone, discovery_type: 'consul')
         expect(ojos_instances.map{|i| i.tags.first[:value]}).to eq(['ojos_instance2', 'ojos_instance3'])
+        expect(ojos_instances.map{|i| i.tags[1][:value]}).to eq(['ojos', 'ojos'])
       end
 
       it "returns backends that are synced from consul-k8s" do
