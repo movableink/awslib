@@ -156,24 +156,24 @@ module MovableInk
 
       def map_ec2_consul_endpoint(endpoint)
         OpenStruct.new ({
-          private_ip_address: endpoint.Node['Address'],
-          instance_id: endpoint.Node['Meta']['instance_id'],
+          private_ip_address: endpoint.Node.dig('Address'),
+          instance_id: endpoint.Node.dig('Meta', 'instance_id'),
           tags: [
             {
               key: 'Name',
-              value: endpoint.Node['Node']
+              value: endpoint.Node.dig('Node')
             },
             {
               key: 'mi:roles',
-              value: endpoint.Node['Meta']['mi_roles']
+              value: endpoint.Node.dig('Meta', 'mi_roles')
             },
             {
               key: 'mi:monitoring_roles',
-              value: endpoint.Node['Meta']['mi_monitoring_roles']
+              value: endpoint.Node.dig('Meta', 'mi_monitoring_roles')
             }
           ],
           placement: {
-            availability_zone: endpoint.Node['Meta']['availability_zone']
+            availability_zone: endpoint.Node.dig('Meta', 'availability_zone')
           }
         })
       end
