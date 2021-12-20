@@ -65,6 +65,8 @@ module MovableInk
         rescue Aws::EC2::Errors::RequestLimitExceeded,
                Aws::EC2::Errors::ResourceAlreadyAssociated,
                Aws::EC2::Errors::Unavailable,
+               Aws::EC2::Errors::InternalError,
+               Aws::EC2::Errors::Http503Error,
                Aws::EKS::Errors::TooManyRequestsException,
                Aws::SNS::Errors::ThrottledException,
                Aws::SNS::Errors::Throttling,
@@ -78,6 +80,8 @@ module MovableInk
                Aws::SSM::Errors::TooManyUpdates,
                Aws::SSM::Errors::ThrottlingException,
                Aws::SSM::Errors::InternalServerError,
+               Aws::SSM::Errors::Http503Error,
+               Aws::SSM::Errors::Http502Error,
                Aws::Athena::Errors::ThrottlingException,
                MovableInk::AWS::Errors::NoEnvironmentTagError
           sleep_time = (num+1)**2 + rand(10)
