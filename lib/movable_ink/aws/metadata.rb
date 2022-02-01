@@ -34,6 +34,10 @@ module MovableInk
         @instance_id ||= retrieve_metadata('instance-id')
       end
 
+      def instance_type
+        @instance_type ||= retrieve_metadata('instance-type')
+      end
+
       def private_ipv4
         @ipv4 ||= retrieve_metadata('local-ipv4')
       end
