@@ -27,12 +27,12 @@ module MovableInk
         raise MovableInk::AWS::Errors::MetadataTimeout
       end
 
-      def retrieve_metadata(key)
-        retrieve_data("/latest/meta-data/#{key}")
+      def retrieve_metadata(key, tries: 3)
+        retrieve_data("/latest/meta-data/#{key}", tries: tries)
       end
 
-      def retrieve_dynamicdata(key)
-        retrieve_data("/latest/dynamic/#{key}")
+      def retrieve_dynamicdata(key, tries: 3)
+        retrieve_data("/latest/dynamic/#{key}", tries: tries)
       end
 
       def instance_identity_document
