@@ -24,7 +24,7 @@ describe MovableInk::AWS::Metadata do
 
     it 'should return nil if the metadata service returns unparseable dynamic data' do
       aws = MovableInk::AWS.new
-      expect(aws).to receive(:retrieve_data).with('/latest/dynamic/instance-identity/document').and_return("something")
+      expect(aws).to receive(:retrieve_data).with('/latest/dynamic/instance-identity/document', {tries: 3}).and_return("something")
       expect(aws.instance_identity_document).to eq(nil)
     end
 
