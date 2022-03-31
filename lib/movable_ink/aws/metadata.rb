@@ -1,4 +1,5 @@
 require 'net/http'
+require 'json'
 
 module MovableInk
   class AWS
@@ -12,10 +13,10 @@ module MovableInk
         end
       end
 
-      def retrieve_metadata(key, tries: 3)
+      def retrieve_data(url, tries: 3)
         tries.times do |num|
           num += 1
-          request = Net::HTTP::Get.new("/latest/meta-data/#{key}")
+          request = Net::HTTP::Get.new(url)
           request['X-aws-ec2-metadata-token'] = imds_token
           response = http(timeout_seconds: num * 3).request(request)
           return response.body
@@ -24,6 +25,20 @@ module MovableInk
         end
 
         raise MovableInk::AWS::Errors::MetadataTimeout
+      end
+
+      def retrieve_metadata(key, tries: 3)
+        retrieve_data("/latest/meta-data/#{key}", tries: tries)
+      end
+
+      def retrieve_dynamicdata(key, tries: 3)
+        retrieve_data("/latest/dynamic/#{key}", tries: tries)
+      end
+
+      def instance_identity_document
+        @instance_identity_document ||= JSON.parse(retrieve_dynamicdata('instance-identity/document'))
+      rescue JSON::ParserError
+        return
       end
 
       def availability_zone

@@ -15,6 +15,19 @@ describe MovableInk::AWS::Metadata do
       expect{ aws.availability_zone }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
     end
 
+    it 'should raise an error if the metadata service times out on getting dynamic data' do
+      aws = MovableInk::AWS.new
+      # stub an error making a request to the metadata api
+      stub_request(:put, 'http://169.254.169.254/latest/api/token').to_raise(Net::OpenTimeout)
+      expect{ aws.instance_identity_document }.to raise_error(MovableInk::AWS::Errors::MetadataTimeout)
+    end
+
+    it 'should return nil if the metadata service returns unparseable dynamic data' do
+      aws = MovableInk::AWS.new
+      expect(aws).to receive(:retrieve_data).with('/latest/dynamic/instance-identity/document', {tries: 3}).and_return("something")
+      expect(aws.instance_identity_document).to eq(nil)
+    end
+
     it 'should raise an error if trying to load private_ipv4 outside of EC2' do
       aws = MovableInk::AWS.new
       # stub an error making a request to the metadata api
