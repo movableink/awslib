@@ -20,7 +20,7 @@ module MovableInk
           request['X-aws-ec2-metadata-token'] = imds_token
           response = http(timeout_seconds: num * 3).request(request)
           return response.body
-        rescue Net::OpenTimeout, Net::ReadTimeout, Errno::EHOSTDOWN
+        rescue Net::OpenTimeout, Net::ReadTimeout, Errno::EHOSTDOWN, Errno::ECONNREFUSED
           sleep(num * 2)
         end
 
