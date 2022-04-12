@@ -4,11 +4,11 @@ module MovableInk
   class AWS
     module SSM
       def ssm_client(region = "us-east-1")
-        @ssm_client = Aws::SSM::Client.new(region: "#{region}")
+        @ssm_client ||= Aws::SSM::Client.new(region: "#{region}")
       end
 
       def ssm_client_failover(failregion = "us-west-2")
-        @ssm_client_failover = Aws::SSM::Client.new(region: "#{failregion}")
+        @ssm_client_failover ||= Aws::SSM::Client.new(region: "#{failregion}")
       end
 
       def run_with_backoff_and_client_fallback(&block)
