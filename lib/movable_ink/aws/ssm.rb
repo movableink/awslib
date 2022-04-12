@@ -3,12 +3,12 @@ require 'aws-sdk-ssm'
 module MovableInk
   class AWS
     module SSM
-      def ssm_client
-        @ssm_client ||= Aws::SSM::Client.new(region: 'us-east-1')
+      def ssm_client(region = "us-east-1")
+        @ssm_client = Aws::SSM::Client.new(region: "#{region}")
       end
 
-      def ssm_client_failover
-        @ssm_client_failover ||= Aws::SSM::Client.new(region: 'us-west-2')
+      def ssm_client_failover(failregion = "us-west-2")
+        @ssm_client_failover = Aws::SSM::Client.new(region: "#{failregion}")
       end
 
       def run_with_backoff_and_client_fallback(&block)
