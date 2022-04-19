@@ -3,12 +3,12 @@ require 'aws-sdk-ssm'
 module MovableInk
   class AWS
     module SSM
-      def ssm_client(region = "us-east-1")
-        @ssm_client ||= Aws::SSM::Client.new(region: "#{region}")
+      def ssm_client(region = nil)
+        @ssm_client ||= (client) ? client : Aws::SSM::Client.new(region: 'us-east-1')
       end
 
-      def ssm_client_failover(failregion = "us-west-2")
-        @ssm_client_failover ||= Aws::SSM::Client.new(region: "#{failregion}")
+      def ssm_client_failover(failregion = nil)
+        @ssm_client_failover ||= (client) ? client: Aws::SSM::Client.new(region: 'us-west-2')
       end
 
       def run_with_backoff_and_client_fallback(&block)
@@ -21,7 +21,7 @@ module MovableInk
         end
       end
 
-      def get_secret(environment: mi_env, role:, attribute:)
+      def get_secret(environment: mi_env, role:, attribute:,client = nil)
         run_with_backoff_and_client_fallback do |ssm|
           begin
             resp = ssm.get_parameter(
@@ -35,7 +35,7 @@ module MovableInk
         end
       end
 
-      def get_role_secrets(environment: mi_env, role:)
+      def get_role_secrets(environment: mi_env, role:,client = nil)
         path = "/#{environment}/#{role}"
         run_with_backoff_and_client_fallback do |ssm|
           ssm.get_parameters_by_path(
