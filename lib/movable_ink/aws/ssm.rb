@@ -21,7 +21,7 @@ module MovableInk
         end
       end
 
-      def get_secret(environment: mi_env, role:, attribute:,client = nil)
+      def get_secret(environment: mi_env, role:, attribute:,region = nil)
         run_with_backoff_and_client_fallback do |ssm|
           begin
             resp = ssm.get_parameter(
@@ -35,7 +35,7 @@ module MovableInk
         end
       end
 
-      def get_role_secrets(environment: mi_env, role:,client = nil)
+      def get_role_secrets(environment: mi_env, role:,region = nil)
         path = "/#{environment}/#{role}"
         run_with_backoff_and_client_fallback do |ssm|
           ssm.get_parameters_by_path(
