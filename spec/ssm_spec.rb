@@ -68,12 +68,22 @@ describe MovableInk::AWS::SSM do
       expect(Aws::SSM::Client).to receive(:new).with({ region: 'us-east-1' })
       aws.ssm_client
     end
+
+    it 'Allows region to be defined as a parameter' do
+      expect(Aws::SSM::Client).to receive(:new).with({ region: 'us-east-2' })
+      aws.ssm_client('us-east-2')
+    end
   end
 
   describe 'ssm_client_failover' do
     it 'fails over to us-west-2' do
       expect(Aws::SSM::Client).to receive(:new).with({ region: 'us-west-2' })
       aws.ssm_client_failover
+    end
+
+    it 'fails over to parameter defined region' do
+      expect(Aws::SSM::Client).to receive(:new).with({ region: 'us-west-1' })
+      aws.ssm_client_failover('us-west-1')
     end
   end
 
