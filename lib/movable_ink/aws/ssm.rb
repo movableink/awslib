@@ -3,11 +3,11 @@ require 'aws-sdk-ssm'
 module MovableInk
   class AWS
     module SSM
-      def ssm_client(region = "us-east-1")
+      def ssm_client(region = nil)
         @ssm_client = (region.nil?) ? Aws::SSM::Client.new(region: "us-east-1") : Aws::SSM::Client.new(region: region)
       end
 
-      def ssm_client_failover(failregion = "us-west-2")
+      def ssm_client_failover(failregion = nil)
         @ssm_client_failover = (failregion.nil?) ? Aws::SSM::Client.new(region: "us-west-2") : Aws::SSM::Client.new(region: failregion)
       end
 
