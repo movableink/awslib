@@ -84,7 +84,8 @@ module MovableInk
                Aws::SSM::Errors::Http503Error,
                Aws::SSM::Errors::Http502Error,
                Aws::Athena::Errors::ThrottlingException,
-               MovableInk::AWS::Errors::NoEnvironmentTagError
+               MovableInk::AWS::Errors::NoEnvironmentTagError,
+               Aws::IAM::Errors::Throttling
           sleep_time = (num+1)**2 + rand(10)
           if quiet
             (num >= tries - 1) ? notify_and_sleep(sleep_time, $!.class) : sleep(sleep_time)
