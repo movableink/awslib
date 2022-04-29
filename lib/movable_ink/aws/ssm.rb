@@ -4,14 +4,31 @@ module MovableInk
   class AWS
     module SSM
 
+      SSM_DEFAULT_REGION = 'us-east-1'
+      SSM_DEFAULT_FAILOVER_REGION = 'us-west-2'
+
+      def mi_secrets_config_file_path
+        '/etc/movableink/secrets_config.json'
+      end
+
+      def mi_secrets_config
+        @mi_secrets_config ||= (File.exist?(mi_secrets_config_file_path)) ? JSON.parse(File.read(mi_secrets_config_file_path), :symbolize_names => true) : nil
+      end
+
+      def mi_ssm_clients_regions
+        default_regions = [SSM_DEFAULT_REGION, SSM_DEFAULT_FAILOVER_REGION]
+        return default_regions if !mi_secrets_config || !mi_secrets_config[:ssm_parameters_regions_map] || mi_secrets_config[:ssm_parameters_regions_map][my_region.to_sym]
+        mi_secrets_config[:ssm_parameters_regions_map][my_region.to_sym].values
+      end
+
       def ssm_client(region = nil)
         @ssm_clients_map ||= {}
-        @ssm_clients_map[region] ||= Aws::SSM::Client.new(region: (region.nil?) ? 'us-east-1' : region)
+        @ssm_clients_map[region] ||= Aws::SSM::Client.new(region: (region.nil?) ? mi_ssm_clients_regions[0] : region)
       end
 
       def ssm_client_failover(failregion = nil)
         @ssm_failover_clients_map ||= {}
-        @ssm_failover_clients_map[failregion] ||= Aws::SSM::Client.new(region: (failregion.nil?) ? 'us-west-2' : failregion)
+        @ssm_failover_clients_map[failregion] ||= Aws::SSM::Client.new(region: (failregion.nil?) ? mi_ssm_clients_regions[1] : failregion)
       end
 
       def run_with_backoff_and_client_fallback(region = nil, failregion = nil, &block)

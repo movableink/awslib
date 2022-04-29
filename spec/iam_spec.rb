@@ -1,57 +1,10 @@
 require_relative '../lib/movable_ink/aws'
 
-describe MovableInk::AWS::SSM do
+describe MovableInk::AWS::IAM do
   let(:aws) { MovableInk::AWS.new }
-  let(:ssm) { Aws::SSM::Client.new(stub_responses: true) }
-  let(:parameter) { ssm.stub_data(:get_parameter, parameter: {
-      name: '/test/sneakers/setec-astronomy',
-      type: 'SecureString',
-      value: 'too-many-secrets'
-    })
-  }
-  let(:parameters) { ssm.stub_data(:get_parameters_by_path, parameters: [
-      {
-        name: '/test/zelda/Its',
-        type: 'SecureString',
-        value: "It's"
-      },
-      {
-        name: '/test/zelda/a',
-        type: 'SecureString',
-        value: "dangerous"
-      },
-      {
-        name: '/test/zelda/secret',
-        type: 'SecureString',
-        value: "to"
-      },
-      {
-        name: '/test/zelda/to',
-        type: 'SecureString',
-        value: "go"
-      },
-      {
-        name: '/test/zelda/everyone',
-        type: 'SecureString',
-        value: "alone"
-      }
-    ])
-  }
-  let(:zelda_secrets) {
-    {
-      "Its"      => "It's",
-      "a"        => "dangerous",
-      "secret"   => "to",
-      "to"       => "go",
-      "everyone" => "alone"
-    }
-  }
+  let(:iam) { Aws::IAM::Client.new(stub_responses: true) }
 
   it "should retrieve a decrypted secret" do
-    ssm.stub_responses(:get_parameter, parameter)
-    allow(aws).to receive(:mi_env).and_return('test')
-    allow(aws).to receive(:ssm_client).and_return(ssm)
-
     expect(aws.get_secret(role: 'sneakers', attribute: 'setec-astronomy')).to eq('too-many-secrets')
   end
 
@@ -111,25 +64,6 @@ describe MovableInk::AWS::SSM do
       expect(calls).to eq(12)
       # the results will include the mock values for each of the clients
       expect(results).to include(1, 2)
-    end
-  end
-
-  describe 'mi_secrets_config_file_path' do
-    it 'returns string' do
-      expect(aws.mi_secrets_config_file_path).to eq 'xxx'
-    end
-  end
-
-  describe 'mi_secrets_config' do
-    it 'parses config file with symbols' do
-    end
-  end
-
-  describe 'mi_ssm_clients_regions' do
-    it 'returns values from config' do
-    end
-
-    it 'returns default values if config is missing' do
     end
   end
 end
