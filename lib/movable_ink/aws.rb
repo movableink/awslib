@@ -12,6 +12,7 @@ require_relative 'aws/elasticache'
 require_relative 'aws/api_gateway'
 require_relative 'consul/consul'
 require 'aws-sdk-cloudwatch'
+require 'aws-sdk-iam'
 
 
 module MovableInk
@@ -85,6 +86,8 @@ module MovableInk
                Aws::SSM::Errors::Http502Error,
                Aws::Athena::Errors::ThrottlingException,
                MovableInk::AWS::Errors::NoEnvironmentTagError,
+               Aws::IAM::Errors::LimitExceededException,
+               Aws::IAM::Errors::RequestLimitExceeded,
                Aws::IAM::Errors::Throttling
           sleep_time = (num+1)**2 + rand(10)
           if quiet
