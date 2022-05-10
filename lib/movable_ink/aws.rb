@@ -13,8 +13,6 @@ require_relative 'aws/elasticache'
 require_relative 'aws/api_gateway'
 require_relative 'consul/consul'
 require 'aws-sdk-cloudwatch'
-require 'aws-sdk-iam'
-
 
 module MovableInk
   class AWS
