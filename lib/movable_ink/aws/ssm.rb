@@ -20,7 +20,7 @@ module MovableInk
 
         return default_regions if !mi_secrets_config || !mi_secrets_config[:ssm_parameters_regions_map] || !mi_secrets_config[:ssm_parameters_regions_map].key?(my_region.to_sym)
         my_region_map = mi_secrets_config[:ssm_parameters_regions_map][my_region.to_sym]
-        (my_region_map.keys.sort == [:primary_region, :failover_region].sort) ? my_region_map.values : default_regions
+        (my_region_map.keys == [:primary_region, :failover_region]) ? my_region_map.values : default_regions
       end
 
       def ssm_client(region = nil)
