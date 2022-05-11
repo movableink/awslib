@@ -27,6 +27,7 @@ module MovableInk
     include ElastiCache
     include ApiGateway
     include EKS
+    include IAM
 
     class << self
       def regions

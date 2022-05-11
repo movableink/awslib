@@ -9,6 +9,8 @@ describe MovableInk::AWS::SSM do
       value: 'too-many-secrets'
     })
   }
+  let(:mi_secrets_config_file_path) { '/etc/movableink/secrets_config.json' }
+  let(:mi_secrets_config_file_mock) { "{\"ssm_parameters_regions_map\": { \"us-east-1\": {\"primary_region\": \"us-east-1\", \"failover_region\": \"us-east-2\"}}}" }
   let(:parameters) { ssm.stub_data(:get_parameters_by_path, parameters: [
       {
         name: '/test/zelda/Its',
@@ -116,20 +118,33 @@ describe MovableInk::AWS::SSM do
 
   describe 'mi_secrets_config_file_path' do
     it 'returns string' do
-      expect(aws.mi_secrets_config_file_path).to eq 'xxx'
+      expect(aws.mi_secrets_config_file_path).to eq mi_secrets_config_file_path
     end
   end
 
   describe 'mi_secrets_config' do
     it 'parses config file with symbols' do
+       allow(File).to receive(:read).with(mi_secrets_config_file_path).and_return(mi_secrets_config_file_mock)
+       allow(File).to receive(:exist?).with(mi_secrets_config_file_path).and_return(true)
+
+       config = aws.mi_secrets_config
+       expect(config.keys).to eq([:ssm_parameters_regions_map])
+       expect(config[:ssm_parameters_regions_map][:"us-east-1"][:primary_region]).to eq 'us-east-1'
+       expect(config[:ssm_parameters_regions_map][:"us-east-1"][:failover_region]).to eq 'us-east-2'
     end
   end
 
   describe 'mi_ssm_clients_regions' do
     it 'returns values from config' do
+      allow(aws).to receive(:mi_secrets_config).and_return(JSON.parse(mi_secrets_config_file_mock, :symbolize_names => true))
+      allow(aws).to receive(:my_region).and_return('us-east-1')
+      expect(aws.mi_ssm_clients_regions).to eq ['us-east-1', 'us-east-2']
     end
 
     it 'returns default values if config is missing' do
+      allow(aws).to receive(:mi_secrets_config).and_return(nil)
+      allow(aws).to receive(:my_region).and_return('us-east-1')
+      expect(aws.mi_ssm_clients_regions).to eq ['us-east-1', 'us-west-2']
     end
   end
 end
