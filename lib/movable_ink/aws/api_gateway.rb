@@ -5,8 +5,8 @@ require 'httparty'
 module MovableInk
   class AWS
     module ApiGateway
-      def post_signed_gateway_request(gateway_url:, region:, body:)
-        credentials = Aws::CredentialProviderChain.new.resolve.credentials
+      def post_signed_gateway_request(gateway_url:, region:, body:, credentials: nil)
+        credentials = (credentials) ? credentials : Aws::CredentialProviderChain.new.resolve.credentials
 
         signer = Aws::Sigv4::Signer.new({
           service: 'execute-api',
