@@ -36,7 +36,8 @@ module MovableInk
           'rld' => 'us-west-2',
           'dub' => 'eu-west-1',
           'ord' => 'us-east-2',
-          'fra' => 'eu-central-1'
+          'fra' => 'eu-central-1',
+          'par' => 'eu-west-3'
         }
       end
     end
