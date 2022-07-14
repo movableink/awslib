@@ -15,6 +15,11 @@ describe MovableInk::AWS::Route53 do
           name: 'host2.domain.tld.',
           set_identifier: '10_0_0_2',
           type: '???'
+        },
+        {
+          name: 'host2-other.domain.tld.',
+          set_identifier: '10_0_0_2',
+          type: '???'
         }
       ])
     }
@@ -23,12 +28,23 @@ describe MovableInk::AWS::Route53 do
       route53.stub_responses(:list_resource_record_sets, rrset_data)
       allow(aws).to receive(:route53).and_return(route53)
 
-      expect(aws.resource_record_sets('Z123').count).to eq(2)
-      expect(aws.resource_record_sets('Z123').first.name).to eq('host1.domain.tld.')
-      expect(aws.resource_record_sets('Z123').last.name).to eq('host2.domain.tld.')
+      expect(aws.resource_record_sets('Z123').count).to eq(3)
+      expect(aws.resource_record_sets('Z123')[0].name).to eq('host1.domain.tld.')
+      expect(aws.resource_record_sets('Z123')[1].name).to eq('host2.domain.tld.')
+      expect(aws.resource_record_sets('Z123')[2].name).to eq('host2-other.domain.tld.')
     end
 
-    it 'deletes a rrset that exists' do
+    it "returns all sets with an identifier" do
+      route53.stub_responses(:list_resource_record_sets, rrset_data)
+      allow(aws).to receive(:route53).and_return(route53)
+
+      sets = aws.get_resource_record_sets_by_instance_name('Z123', '10_0_0_2')
+      expect(sets.count).to eq(2)
+      expect(sets[0][:name]).to eq('host2.domain.tld.')
+      expect(sets[1][:name]).to eq('host2-other.domain.tld.')
+    end
+
+    it 'deletes rrsets that exist under the same identifier' do
       route53.stub_responses(:list_resource_record_sets, rrset_data)
       allow(aws).to receive(:route53).and_return(route53)
 
@@ -38,6 +54,14 @@ describe MovableInk::AWS::Route53 do
             action: "DELETE",
             resource_record_set: {
               name: "host2.domain.tld.",
+              type: "???",
+              set_identifier: "10_0_0_2"
+            }
+          },
+          {
+            action: "DELETE",
+            resource_record_set: {
+              name: "host2-other.domain.tld.",
               type: "???",
               set_identifier: "10_0_0_2"
             }

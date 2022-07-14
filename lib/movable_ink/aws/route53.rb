@@ -13,18 +13,20 @@ module MovableInk
       end
 
       def get_resource_record_sets_by_instance_name(zone, instance_name, client = nil)
-        resource_record_sets(zone, client).select{|rrs| rrs.set_identifier == instance_name}.first.to_h
+        resource_record_sets(zone, client).select{|rrs| rrs.set_identifier == instance_name}.map(&:to_h)
       end
 
       def delete_resource_record_sets(zone, instance_name, client = nil)
-        resource_record_set = get_resource_record_sets_by_instance_name(zone, instance_name, client)
-        return if resource_record_set.empty?
+        resource_record_sets = get_resource_record_sets_by_instance_name(zone, instance_name, client)
+        return if resource_record_sets.empty?
 
         change_batch = {
-          "changes": [{
-            "action": 'DELETE',
-            "resource_record_set": resource_record_set
-          }]
+          "changes": resource_record_sets.map { |resource_record_set|
+            {
+              "action": 'DELETE',
+              "resource_record_set": resource_record_set
+            }
+          }
         }
 
         run_with_backoff do
