@@ -6,8 +6,8 @@ Gem::Specification.new do |s|
   s.version       = MovableInk::AWS::VERSION
   s.summary       = 'AWS Utility methods for MovableInk'
   s.description   = 'AWS Utility methods for MovableInk'
-  s.authors       = ['Matt Chesler']
-  s.email         = 'mchesler@movableink.com'
+  s.authors       = ['MI SRE']
+  s.email         = 'devops@movableink.com'
 
   s.add_runtime_dependency 'aws-sdk-core', '~> 3'
   s.add_runtime_dependency 'aws-sdk-athena', '~> 1'

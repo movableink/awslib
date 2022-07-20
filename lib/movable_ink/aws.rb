@@ -100,7 +100,7 @@ module MovableInk
           message = "#{e.class}: #{e.message}\nFrom #{$0}\n```\n#{e.backtrace.first(3).join("\n").gsub("`","'")}\n```"
           notify_slack(subject: 'Unhandled AWS API Error', message: message)
           puts message
-          raise MovableInk::AWS::Errors::ServiceError
+          raise MovableInk::AWS::Errors::ServiceError.new("#{e.class}: #{e.message}")
         end
       end
       message = "From: #{$0}\n```\n#{Thread.current.backtrace.first(3).join("\n").gsub("`","'")}\n```"
@@ -111,6 +111,10 @@ module MovableInk
 
     def regions
       self.class.regions
+    end
+
+    def my_aws_account_id
+      @my_aws_account_id ||= instance_identity_document['accountId'].to_i
     end
 
     def my_region
