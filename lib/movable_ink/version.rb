@@ -1,5 +1,5 @@
 module MovableInk
   class AWS
-    VERSION = '2.6.7'
+    VERSION = '2.7.1'
   end
 end
