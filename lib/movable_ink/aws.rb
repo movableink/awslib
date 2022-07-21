@@ -61,7 +61,8 @@ module MovableInk
       end
     end
 
-    def run_with_backoff(quiet: false, tries: 9)
+    # exected_errors[0].class == MovableInk::AWS::ExpectedError
+    def run_with_backoff(quiet: false, tries: 9, expected_errors: [])
       tries.times do |num|
         begin
           return yield
@@ -97,6 +98,7 @@ module MovableInk
             notify_and_sleep(sleep_time, $!.class)
           end
         rescue Aws::Errors::ServiceError => e
+          expected_errors.each {|expected_error| return if expected_error.match?(e) }
           message = "#{e.class}: #{e.message}\nFrom #{$0}\n```\n#{e.backtrace.first(3).join("\n").gsub("`","'")}\n```"
           notify_slack(subject: 'Unhandled AWS API Error', message: message)
           puts message
