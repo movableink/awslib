@@ -16,7 +16,7 @@ module MovableInk
         resource_record_sets(zone, client).select{|rrs| rrs.set_identifier == instance_name}.map(&:to_h)
       end
 
-      def delete_resource_record_sets(zone, instance_name, client = nil)
+      def delete_resource_record_sets(zone, instance_name, client = nil, expected_errors = [])
         resource_record_sets = get_resource_record_sets_by_instance_name(zone, instance_name, client)
         return if resource_record_sets.empty?
 
@@ -29,7 +29,7 @@ module MovableInk
           }
         }
 
-        run_with_backoff do
+        run_with_backoff(expected_errors: expected_errors) do
           route53(client).change_resource_record_sets({change_batch: change_batch, hosted_zone_id: zone})
         end
       end
