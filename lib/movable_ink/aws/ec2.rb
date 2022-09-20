@@ -4,9 +4,9 @@ require 'diplomat'
 module MovableInk
   class AWS
     module EC2
-      def ec2(region: my_region)
+      def ec2(region: my_region, client: nil)
         @ec2_client ||= {}
-        @ec2_client[region] ||= Aws::EC2::Client.new(region: region)
+        @ec2_client[region] ||= (client) ? client : Aws::EC2::Client.new(region: region)
       end
 
       def mi_env_cache_file_path
@@ -38,9 +38,9 @@ module MovableInk
         end
       end
 
-      def all_instances(region: my_region, no_filter: false)
+      def all_instances(region: my_region, no_filter: false, client: nil)
         @all_instances ||= {}
-        @all_instances[region] ||= load_all_instances(region, no_filter: no_filter)
+        @all_instances[region] ||= load_all_instances(region, no_filter: no_filter, client: client)
       end
 
       def default_filter
@@ -54,11 +54,11 @@ module MovableInk
         }]
       end
 
-      def load_all_instances(region, no_filter: false, filter: nil)
+      def load_all_instances(region, no_filter: false, filter: nil, client: nil)
         filters = no_filter ? nil : (filter || default_filter)
 
         run_with_backoff do
-          ec2(region: region).describe_instances(filters: filters).flat_map do |resp|
+          ec2(region: region, client: client).describe_instances(filters: filters).flat_map do |resp|
             resp.reservations.flat_map(&:instances)
           end
         end
