@@ -589,6 +589,34 @@ describe MovableInk::AWS::EC2 do
           }
         ]])
       }
+      let(:redis_data_cross_azs) { ec2.stub_data(:describe_instances, reservations: [
+        instances: [
+          {
+            tags: [
+              {
+                key: 'mi:roles',
+                value: 'visitor_redis'
+              }
+            ],
+            private_ip_address: '10.0.0.1',
+            placement: {
+              availability_zone: availability_zone
+            }
+          },
+          {
+            tags: [
+              {
+                key: 'mi:roles',
+                value: 'visitor_redis'
+              }
+            ],
+            private_ip_address: '10.0.0.2',
+            placement: {
+              availability_zone: 'us-east-1z'
+            }
+          }
+        ]])
+      }
       let(:redii) { [{"host" => '10.0.0.1', "port" => 6379},{"host" => '10.0.0.2', "port" => 6379}] }
 
       it "should return redis IPs and ports" do
@@ -599,6 +627,20 @@ describe MovableInk::AWS::EC2 do
         allow(aws).to receive(:ec2).and_return(ec2)
 
         expect(aws.redis_by_role('visitor_redis', port)).to match_array(redii)
+      end
+
+      it "should return redis IPs and ports only from specified AZs" do
+        ec2.stub_responses(:describe_instances, redis_data_cross_azs)
+        allow(aws).to receive(:mi_env).and_return('test')
+        allow(aws).to receive(:availability_zone).and_return(availability_zone)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:ec2).and_return(ec2)
+
+        expect(aws.redis_by_role('visitor_redis', port, ['us-east-1z'])).to match_array([{"host" => '10.0.0.2', "port" => 6379}])
+      end
+
+      it "should throw exception if specified AZs list isnt array" do
+        expect { aws.redis_by_role('visitor_redis', port, 'us-east-1z') }.to raise_error(MovableInk::AWS::Errors::AvailabilityZonesListInvalidError)
       end
     end
 

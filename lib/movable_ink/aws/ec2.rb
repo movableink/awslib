@@ -211,12 +211,26 @@ module MovableInk
         private_ip_addresses(ordered_instances)
       end
 
-      def redis_by_role(role, port)
-        instance_ip_addresses_by_role(role: role)
-          .shuffle
-          .inject([]) { |redii, instance|
-            redii.push({"host" => instance, "port" => port})
-          }
+      def redis_by_role(role, port, availability_zones = [])
+        if availability_zones.class != Array
+          raise MovableInk::AWS::Errors::AvailabilityZonesListInvalidError
+        end
+
+        redis_instances = []
+
+        def redis(host, port)
+          {"host" => host, "port" => port}
+        end
+
+        if availability_zones.length > 0
+          availability_zones.each do |az|
+            redis_instances << instance_ip_addresses_by_role(role: role, availability_zone: az).inject([]) { |redii, instance| redii.push(redis(instance, port)) }
+          end
+        else
+          redis_instances << instance_ip_addresses_by_role(role: role).inject([]) { |redii, instance| redii.push(redis(instance, port)) }
+        end
+
+        redis_instances.flatten.shuffle
       end
 
       def elastic_ips
