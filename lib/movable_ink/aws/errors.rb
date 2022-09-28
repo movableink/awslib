@@ -8,6 +8,7 @@ module MovableInk
       class InvalidDiscoveryTypeError < StandardError; end
       class RoleNameRequiredError < StandardError; end
       class RoleNameInvalidError < StandardError; end
+      class AvailabilityZonesListInvalidError < StandardError; end
 
       class ExpectedError
         def initialize(error_class, message_patterns = [])
