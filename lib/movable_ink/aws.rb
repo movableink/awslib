@@ -2,6 +2,7 @@ require_relative 'aws/errors'
 require_relative 'aws/metadata'
 require_relative 'aws/ec2'
 require_relative 'aws/sns'
+require_relative 'aws/sts'
 require_relative 'aws/autoscaling'
 require_relative 'aws/route53'
 require_relative 'aws/ssm'
@@ -28,6 +29,7 @@ module MovableInk
     include ApiGateway
     include EKS
     include IAM
+    include STS
 
     class << self
       def regions

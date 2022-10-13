@@ -5,3 +5,5 @@ group :test do
   gem 'rspec',    '~> 3.6'
   gem 'webmock'
 end
+
+gem "aws-sdk-sts", "~> 1.7"
