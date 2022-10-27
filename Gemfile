@@ -4,5 +4,4 @@ gemspec
 group :test do
   gem 'rspec',    '~> 3.6'
   gem 'webmock'
-  gem 'pry'
 end
