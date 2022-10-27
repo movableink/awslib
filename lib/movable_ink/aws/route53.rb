@@ -35,11 +35,20 @@ module MovableInk
       end
 
       def list_all_r53_resource_record_sets(hosted_zone_id, client = nil)
-        run_with_backoff do
-          route53(client).list_resource_record_sets({
-            hosted_zone_id: hosted_zone_id
-          }).flat_map(&:resource_record_sets)
+        resp = run_with_backoff { route53(client).list_resource_record_sets({ hosted_zone_id: hosted_zone_id }) }
+        rrs = resp.resource_record_sets
+
+        # https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListResourceRecordSets.html
+        while resp.is_truncated
+          resp = run_with_backoff { route53(client).list_resource_record_sets({
+            hosted_zone_id: hosted_zone_id,
+            start_record_name: resp.next_record_name,
+            start_record_type: resp.next_record_type,
+            start_record_identifier: resp.next_record_identifier
+          }) }
+          rrs += resp.resource_record_sets
         end
+        rrs
       end
 
       def list_health_checks(client = nil)
@@ -61,6 +70,18 @@ module MovableInk
         list_health_checks(client).detect do |health_check|
           get_health_check_tags(health_check.id, client).detect { |tag| tag.key == key && tag.value.include?(value) }
         end
+      end
+
+      def list_hosted_zones(client: nil)
+        resp = run_with_backoff { route53(client).list_hosted_zones() }
+        zones = resp.hosted_zones
+
+        # https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListHostedZones.html
+        while resp.is_truncated
+          resp = run_with_backoff { route53(client).list_hosted_zones({marker: resp.next_marker}) }
+          zones += resp.hosted_zones
+        end
+        zones
       end
     end
   end
