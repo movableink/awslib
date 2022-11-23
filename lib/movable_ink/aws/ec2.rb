@@ -255,6 +255,28 @@ module MovableInk
           })
         end
       end
+
+      def verify_elastic_ip_address(public_ip:)
+        begin
+          run_with_backoff do
+            result = ec2.describe_addresses({
+              public_ips: [public_ip]
+            })
+            if result.respond_to?(:addresses)
+              if result.addresses.length > 0
+                return true
+              else
+                return false
+              end
+            else
+              return false
+            end
+          end
+        rescue Aws::EC2::Errors::InvalidAddressNotFound
+          return false
+        end
+        return false
+      end
     end
   end
 end
