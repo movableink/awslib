@@ -736,7 +736,7 @@ describe MovableInk::AWS::EC2 do
         allow(aws).to receive(:my_region).and_return('us-east-2')
         allow(aws).to receive(:public_ip).and_return('185.35.3.4')
         allow(aws).to receive(:ec2).and_return(ec2)
-        expect(aws.verify_elastic_ip_address(public_ip: '185.35.3.4')).to eq(true)
+        expect(aws.elastic_ip_address_exist?(public_ip: '185.35.3.4')).to eq(true)
       end
   
       it 'will return false when there is no elastic IP' do
@@ -744,7 +744,7 @@ describe MovableInk::AWS::EC2 do
         allow(aws).to receive(:my_region).and_return('us-east-2')
         allow(aws).to receive(:public_ip).and_return('185.35.3.4')
         allow(aws).to receive(:ec2).and_return(ec2)
-        expect(aws.verify_elastic_ip_address(public_ip: '185.35.3.4')).to eq(false)
+        expect(aws.elastic_ip_address_exist?(public_ip: '185.35.3.4')).to eq(false)
       end
     end
   end
