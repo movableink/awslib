@@ -740,7 +740,7 @@ describe MovableInk::AWS::EC2 do
       end
   
       it 'will return false when there is no elastic IP' do
-        ec2.stub_responses(:describe_addresses, empty_public_ip_data)
+        ec2.stub_responses(:describe_addresses, MovableInk::AWS::Errors::ServiceError.new("Aws::EC2::Errors::InvalidAddressNotFound: Address \'185.35.3.4\' not found."))
         allow(aws).to receive(:my_region).and_return('us-east-2')
         allow(aws).to receive(:public_ip).and_return('185.35.3.4')
         allow(aws).to receive(:ec2).and_return(ec2)
