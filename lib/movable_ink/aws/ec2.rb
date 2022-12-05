@@ -255,6 +255,24 @@ module MovableInk
           })
         end
       end
+
+      def elastic_ip_address_exist?(public_ip:)
+        expected_errors = [
+          MovableInk::AWS::Errors::ExpectedError.new(Aws::EC2::Errors::InvalidAddressNotFound, [/Address \'#{public_ip}\' not found./])
+        ]
+        begin
+          run_with_backoff(expected_errors: expected_errors) do
+            ec2.describe_addresses({
+              public_ips: [public_ip]
+            })
+            return true
+          end
+        rescue MovableInk::AWS::Errors::ServiceError, Aws::EC2::Errors::InvalidAddressNotFound
+          return false
+        end
+        # returns false if it ran out of API retries
+        return false
+      end
     end
   end
 end

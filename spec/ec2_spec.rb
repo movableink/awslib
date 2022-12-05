@@ -718,5 +718,34 @@ describe MovableInk::AWS::EC2 do
         expect(aws.assign_ip_address(role: 'some_role').association_id).to eq('eipassoc-3')
       end
     end
+    
+    context 'elastic ips' do
+      let(:public_ip_data) {ec2.stub_data(:describe_addresses, addresses: [
+          {
+            allocation_id: "eipalloc-12345678",
+            association_id: "eipassoc-12345678",
+            public_ip: "185.35.4.3", 
+          }
+        ])
+      }
+
+      let(:empty_public_ip_data) {ec2.stub_data(:describe_addresses, addresses: [])}
+
+      it 'will return true when there is an elastic IP' do
+        ec2.stub_responses(:describe_addresses, public_ip_data)
+        allow(aws).to receive(:my_region).and_return('us-east-2')
+        allow(aws).to receive(:public_ip).and_return('185.35.3.4')
+        allow(aws).to receive(:ec2).and_return(ec2)
+        expect(aws.elastic_ip_address_exist?(public_ip: '185.35.3.4')).to eq(true)
+      end
+  
+      it 'will return false when there is no elastic IP' do
+        ec2.stub_responses(:describe_addresses, MovableInk::AWS::Errors::ServiceError.new("Aws::EC2::Errors::InvalidAddressNotFound: Address \'185.35.3.4\' not found."))
+        allow(aws).to receive(:my_region).and_return('us-east-2')
+        allow(aws).to receive(:public_ip).and_return('185.35.3.4')
+        allow(aws).to receive(:ec2).and_return(ec2)
+        expect(aws.elastic_ip_address_exist?(public_ip: '185.35.3.4')).to eq(false)
+      end
+    end
   end
 end
