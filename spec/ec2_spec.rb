@@ -440,12 +440,12 @@ describe MovableInk::AWS::EC2 do
         allow(miaws).to receive(:my_region).and_return('us-east-1')
 
         json = JSON.generate(consul_app_service_instances)
-        stub_request(:get, "https://localhost:8501/v1/health/service/app?cached&dc=#{my_datacenter}&passing&stale").
+        stub_request(:get, "https://localhost:8501/v1/health/service/app?cached=true&dc=#{my_datacenter}&passing=true&stale=true").
          with(
             headers: {
             'Accept'=>'*/*',
             'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'User-Agent'=>'Faraday v1.0.1'
+            'User-Agent'=>'Faraday v2.7.1'
            }).
          to_return(status: 200, body: json, headers: {})
 
@@ -453,12 +453,12 @@ describe MovableInk::AWS::EC2 do
         expect(app_instances.map{|i| i.tags.first[:value]}).to eq(['app_instance1', 'app_instance2'])
 
         json = JSON.generate(consul_ojos_service_instances)
-        stub_request(:get, "https://localhost:8501/v1/health/service/ojos?cached&dc=#{my_datacenter}&passing&stale").
+        stub_request(:get, "https://localhost:8501/v1/health/service/ojos?cached=true&dc=#{my_datacenter}&passing=true&stale=true").
          with(
            headers: {
           'Accept'=>'*/*',
           'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-          'User-Agent'=>'Faraday v1.0.1'
+          'User-Agent'=>'Faraday v2.7.1'
            }).
          to_return(status: 200, body: json, headers: {})
 
@@ -471,12 +471,12 @@ describe MovableInk::AWS::EC2 do
         allow(miaws).to receive(:my_region).and_return('us-east-1')
 
         json = JSON.generate(consul_ojos_service_instances)
-        stub_request(:get, "https://localhost:8501/v1/health/service/ojos?cached&dc=#{my_datacenter}&node-meta=availability_zone:#{other_availability_zone}&passing&stale").
+        stub_request(:get, "https://localhost:8501/v1/health/service/ojos?cached=true&dc=#{my_datacenter}&node-meta=availability_zone:#{other_availability_zone}&passing=true&stale=true").
          with(
             headers: {
             'Accept'=>'*/*',
             'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'User-Agent'=>'Faraday v1.0.1'
+            'User-Agent'=>'Faraday v2.7.1'
            }).
          to_return(status: 200, body: json, headers: {})
 
@@ -490,12 +490,12 @@ describe MovableInk::AWS::EC2 do
         allow(miaws).to receive(:my_region).and_return('us-east-1')
 
         json = JSON.generate(consul_kubernetes_service_instances)
-        stub_request(:get, "https://localhost:8501/v1/health/service/kubernetes-service-name?cached&dc=#{my_datacenter}&passing&stale")
+        stub_request(:get, "https://localhost:8501/v1/health/service/kubernetes-service-name?cached=true&dc=#{my_datacenter}&passing=true&stale=true")
           .with({
             headers: {
               'Accept'=>'*/*',
               'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-              'User-Agent'=>'Faraday v1.0.1'
+              'User-Agent'=>'Faraday v2.7.1'
             }
           })
           .to_return(status: 200, body: json, headers: {})
@@ -718,13 +718,13 @@ describe MovableInk::AWS::EC2 do
         expect(aws.assign_ip_address(role: 'some_role').association_id).to eq('eipassoc-3')
       end
     end
-    
+
     context 'elastic ips' do
       let(:public_ip_data) {ec2.stub_data(:describe_addresses, addresses: [
           {
             allocation_id: "eipalloc-12345678",
             association_id: "eipassoc-12345678",
-            public_ip: "185.35.4.3", 
+            public_ip: "185.35.4.3",
           }
         ])
       }
@@ -738,7 +738,7 @@ describe MovableInk::AWS::EC2 do
         allow(aws).to receive(:ec2).and_return(ec2)
         expect(aws.elastic_ip_address_exist?(public_ip: '185.35.3.4')).to eq(true)
       end
-  
+
       it 'will return false when there is no elastic IP' do
         ec2.stub_responses(:describe_addresses, MovableInk::AWS::Errors::ServiceError.new("Aws::EC2::Errors::InvalidAddressNotFound: Address \'185.35.3.4\' not found."))
         allow(aws).to receive(:my_region).and_return('us-east-2')
