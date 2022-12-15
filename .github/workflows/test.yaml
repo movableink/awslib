@@ -8,6 +8,8 @@ on:
     branches: [$default-branch]
 
 jobs:
+  # This test is used to ensure the chef-solo version of ruby (2.5.0)
+  # is able to install miaws successfully.
   test0:
 
     runs-on: ubuntu-18.04
