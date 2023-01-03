@@ -17,7 +17,7 @@ PATH
       aws-sdk-ssm (~> 1)
       aws-sigv4 (~> 1.1)
       diplomat (= 2.6.4)
-      httparty (= 0.16.3)
+      httparty (= 0.21.0)
 
 GEM
   remote: https://rubygems.org/
@@ -104,13 +104,11 @@ GEM
     faraday-rack (1.0.0)
     faraday-retry (1.0.3)
     hashdiff (1.0.1)
-    httparty (0.16.3)
-      mime-types (~> 3.0)
+    httparty (0.21.0)
+      mini_mime (>= 1.0.0)
       multi_xml (>= 0.5.2)
     jmespath (1.6.2)
-    mime-types (3.4.1)
-      mime-types-data (~> 3.2015)
-    mime-types-data (3.2022.0105)
+    mini_mime (1.1.2)
     multi_xml (0.6.0)
     multipart-post (2.2.3)
     public_suffix (4.0.7)
