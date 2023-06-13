@@ -87,6 +87,8 @@ module MovableInk
                Aws::SSM::Errors::InternalServerError,
                Aws::SSM::Errors::Http503Error,
                Aws::SSM::Errors::Http502Error,
+               Aws::STS::Errors::ServiceUnavailable,
+               Aws::STS::Errors::Throttling,
                Aws::Athena::Errors::ThrottlingException,
                MovableInk::AWS::Errors::NoEnvironmentTagError,
                Aws::IAM::Errors::LimitExceededException,
