@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'aws-sdk-eks', '~> 1'
   s.add_runtime_dependency 'aws-sdk-elasticache', '~> 1'
   s.add_runtime_dependency 'aws-sdk-iam', '~> 1'
+  s.add_runtime_dependency 'aws-sdk-lambda', '~> 1'
   s.add_runtime_dependency 'aws-sdk-rds', '~> 1'
   s.add_runtime_dependency 'aws-sdk-route53', '~> 1'
   s.add_runtime_dependency 'aws-sdk-s3', '~> 1'
