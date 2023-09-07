@@ -3,7 +3,7 @@ require 'aws-sdk-lambda'
 module MovableInk
   class AWS
     module Lambda
-      def lambda(region: my_region)
+      def lambda(region: 'us-east-1')
         @lambda_client ||= {}
         @lambda_client[region] ||= Aws::Lambda::Client.new(region: region)
       end
