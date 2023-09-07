@@ -8,9 +8,7 @@ module MovableInk
         @lambda_client[region] ||= Aws::Lambda::Client.new(region: region)
       end
 
-      def disable_autoscaling_lambda
-        function_name = 'autoscaling-scheduled-capacity-production-cleanup'
-
+      def disable_autoscaling_lambda(function_name)
         lambda.update_function_configuration({
           function_name: function_name,
           environment: {
@@ -21,9 +19,7 @@ module MovableInk
         })
       end
 
-      def enable_autoscaling_lambda
-        function_name = 'autoscaling-scheduled-capacity-production-cleanup'
-
+      def enable_autoscaling_lambda(function_name)
         lambda.update_function_configuration({
           function_name: function_name,
           environment: {
