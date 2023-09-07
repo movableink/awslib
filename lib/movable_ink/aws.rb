@@ -11,6 +11,7 @@ require_relative 'aws/iam'
 require_relative 'aws/eks'
 require_relative 'aws/elasticache'
 require_relative 'aws/api_gateway'
+require_relative 'aws/lambda'
 require_relative 'consul/consul'
 require 'aws-sdk-cloudwatch'
 
@@ -28,6 +29,7 @@ module MovableInk
     include ApiGateway
     include EKS
     include IAM
+    include Lambda
 
     class << self
       def regions

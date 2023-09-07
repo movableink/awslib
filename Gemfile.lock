@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    MovableInkAWS (2.8.5)
+    MovableInkAWS (2.8.6)
       aws-sdk-athena (~> 1)
       aws-sdk-autoscaling (~> 1)
       aws-sdk-cloudwatch (~> 1)
@@ -10,6 +10,7 @@ PATH
       aws-sdk-eks (~> 1)
       aws-sdk-elasticache (~> 1)
       aws-sdk-iam (~> 1)
+      aws-sdk-lambda (~> 1)
       aws-sdk-rds (~> 1)
       aws-sdk-route53 (~> 1)
       aws-sdk-s3 (~> 1)
@@ -53,6 +54,9 @@ GEM
       aws-sdk-core (~> 3, >= 3.165.0)
       aws-sigv4 (~> 1.1)
     aws-sdk-kms (1.62.0)
+      aws-sdk-core (~> 3, >= 3.165.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-lambda (1.96.0)
       aws-sdk-core (~> 3, >= 3.165.0)
       aws-sigv4 (~> 1.1)
     aws-sdk-rds (1.171.0)
