@@ -1,0 +1,8 @@
+.bundle
+.vagrant
+.DS_Store
+.serverless
+.vscode
+.idea
+vendor/*
+*.tar.gz
