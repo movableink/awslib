@@ -273,6 +273,18 @@ module MovableInk
         # returns false if it ran out of API retries
         return false
       end
+
+      def get_managed_prefix_list_entries(managed_prefix_list_name)
+        entries = []
+        run_with_backoff do
+          result = ec2.describe_managed_prefix_lists({filters: [{name: "prefix-list-name", values: [managed_prefix_list_name]}]})
+          raise MovableInk::AWS::Errors::ServiceError if result.prefix_lists.nil? || result.prefix_lists[0].nil?
+          prefix_list_id = result.prefix_lists[0].prefix_list_id
+          result = ec2.get_managed_prefix_list_entries({prefix_list_id: prefix_list_id})
+          entries = result.data.entries.map {|e| e.cidr}
+        end
+        return entries
+      end
     end
   end
 end
