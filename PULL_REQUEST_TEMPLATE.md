@@ -13,4 +13,4 @@
 #### Dependencies (if any)
 
 
-:house: [sc-XXXX](https://app.shortcut.com/movableink/story/XXXX)
+:card-index: [sc-XXXX]
