@@ -13,4 +13,4 @@
 #### Dependencies (if any)
 
 
-:card-index: [sc-XXXX]
+:card_index: [sc-XXXX]
