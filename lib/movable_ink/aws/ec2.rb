@@ -1,5 +1,6 @@
 require 'aws-sdk-ec2'
 require 'diplomat'
+require 'ostruct'
 
 module MovableInk
   class AWS

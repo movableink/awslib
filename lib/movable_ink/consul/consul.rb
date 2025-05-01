@@ -8,9 +8,10 @@ end
 module MovableInk
   module Consul
     module Kv
-      def self.get(*args)
+      def self.get(*args, **kwargs)
         begin
-          result = Diplomat::Kv.get(*args)
+          options = kwargs
+          result = Diplomat::Kv.get(*args, **options)
           JSON.parse(result) if !result.nil?
         rescue JSON::ParserError
           result
