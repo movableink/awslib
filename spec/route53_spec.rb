@@ -9,7 +9,8 @@ describe MovableInk::AWS::Route53 do
     it "should list all hosted zones" do
       zones_data = route53.stub_data(:list_hosted_zones, is_truncated: false, hosted_zones: [{
         id: '123456789X',
-        name: 'domain.tld'
+        name: 'domain.tld',
+        caller_reference: '123'
       }])
       route53.stub_responses(:list_hosted_zones, zones_data)
       allow(aws).to receive(:route53).and_return(route53)

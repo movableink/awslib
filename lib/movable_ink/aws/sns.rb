@@ -37,13 +37,13 @@ module MovableInk
         dedup_key:
       )
         run_with_backoff do
-          message_json = pd_message_json({
+          message_json = pd_message_json(
             source: source,
             summary: summary,
             links: links,
             custom_details: custom_details,
-            dedup_key: dedup_key,
-          })
+            dedup_key: dedup_key
+          )
 
           sns.publish({
             topic_arn: sns_pagerduty_topic_arn,

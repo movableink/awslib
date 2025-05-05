@@ -441,12 +441,6 @@ describe MovableInk::AWS::EC2 do
 
         json = JSON.generate(consul_app_service_instances)
         stub_request(:get, "https://localhost:8501/v1/health/service/app?cached=true&dc=#{my_datacenter}&passing=true&stale=true").
-         with(
-            headers: {
-            'Accept'=>'*/*',
-            'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'User-Agent'=>'Faraday v2.8.1'
-           }).
          to_return(status: 200, body: json, headers: {})
 
         app_instances = aws.instances(role: 'app', discovery_type: 'consul')
@@ -454,12 +448,6 @@ describe MovableInk::AWS::EC2 do
 
         json = JSON.generate(consul_ojos_service_instances)
         stub_request(:get, "https://localhost:8501/v1/health/service/ojos?cached=true&dc=#{my_datacenter}&passing=true&stale=true").
-         with(
-           headers: {
-          'Accept'=>'*/*',
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-          'User-Agent'=>'Faraday v2.8.1'
-           }).
          to_return(status: 200, body: json, headers: {})
 
         ojos_instances = aws.instances(role: 'ojos', discovery_type: 'consul')
@@ -472,12 +460,6 @@ describe MovableInk::AWS::EC2 do
 
         json = JSON.generate(consul_ojos_service_instances)
         stub_request(:get, "https://localhost:8501/v1/health/service/ojos?cached=true&dc=#{my_datacenter}&node-meta=availability_zone:#{other_availability_zone}&passing=true&stale=true").
-         with(
-            headers: {
-            'Accept'=>'*/*',
-            'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'User-Agent'=>'Faraday v2.8.1'
-           }).
          to_return(status: 200, body: json, headers: {})
 
         ojos_instances = aws.instances(role: 'ojos', availability_zone: other_availability_zone, discovery_type: 'consul')
@@ -491,13 +473,6 @@ describe MovableInk::AWS::EC2 do
 
         json = JSON.generate(consul_kubernetes_service_instances)
         stub_request(:get, "https://localhost:8501/v1/health/service/kubernetes-service-name?cached=true&dc=#{my_datacenter}&passing=true&stale=true")
-          .with({
-            headers: {
-              'Accept'=>'*/*',
-              'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-              'User-Agent'=>'Faraday v2.8.1'
-            }
-          })
           .to_return(status: 200, body: json, headers: {})
 
          resp_instances = aws.instances(role: 'kubernetes-service-name', discovery_type: 'consul')
