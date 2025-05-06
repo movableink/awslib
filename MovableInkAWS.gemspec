@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'aws-sigv4', '~> 1'
   s.add_runtime_dependency 'httparty',  '0.23.1'
   s.add_runtime_dependency 'diplomat',  '2.6.4'
-  s.add_runtime_dependency 'faraday',  '~> 2.13'
+  s.add_runtime_dependency 'faraday',  '~> 2'
 
   all_files  = `git ls-files`.split("\n")
   test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
