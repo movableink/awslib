@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 gemspec
 
-gem 'faraday', '~> 2.13'
+gem 'faraday', '~> 2'
 gem 'httparty', '~> 0.23.1'
 
 group :test do
