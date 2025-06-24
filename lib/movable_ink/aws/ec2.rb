@@ -15,8 +15,8 @@ module MovableInk
         if (client)
           @ec2_client_with_retries[region] ||= client
         else
-          instance_credentials = Aws::InstanceProfileCredentials.new
-          @ec2_client_with_retries[region] ||= Aws::EC2::Client.new(region: region, credentials: instance_credentials, retries: 5)
+          instance_credentials = Aws::InstanceProfileCredentials.new(retries: 5)
+          @ec2_client_with_retries[region] ||= Aws::EC2::Client.new(region: region, credentials: instance_credentials)
         end
       end
 
