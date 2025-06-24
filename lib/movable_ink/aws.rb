@@ -75,6 +75,7 @@ module MovableInk
                Aws::EC2::Errors::InternalError,
                Aws::EC2::Errors::Http503Error,
                Aws::EKS::Errors::TooManyRequestsException,
+               Aws::Errors::MissingCredentialsError,
                Aws::SNS::Errors::ThrottledException,
                Aws::SNS::Errors::Throttling,
                Aws::AutoScaling::Errors::Throttling,
