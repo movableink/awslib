@@ -10,6 +10,16 @@ module MovableInk
         @ec2_client[region] ||= (client) ? client : Aws::EC2::Client.new(region: region)
       end
 
+      def ec2_with_retries(region: my_region, client: nil)
+        @ec2_client_with_retries ||= {}
+        if (client)
+          @ec2_client_with_retries[region] ||= client
+        else
+          instance_credentials = Aws::InstanceProfileCredentials.new
+          @ec2_client_with_retries[region] ||= Aws::EC2::Client.new(region: region, credentials: instance_credentials, retries: 5)
+        end
+      end
+
       def mi_env_cache_file_path
         '/etc/movableink/environments.json'
       end

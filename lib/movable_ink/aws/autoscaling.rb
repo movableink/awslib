@@ -46,6 +46,20 @@ module MovableInk
         end
       end
 
+      def delete_role_tag_with_retries(role:)
+        run_with_backoff do
+          ec2_with_retries.delete_tags({
+            resources: [instance_id],
+            tags: [
+              {
+                key: "mi:roles",
+                value: role
+              }
+            ]
+          })
+        end
+      end
+
       def complete_lifecycle_action(lifecycle_hook_name:, auto_scaling_group_name:, lifecycle_action_token: nil, instance_id: nil)
         raise ArgumentError.new('lifecycle_action_token or instance_id required') if lifecycle_action_token.nil? && instance_id.nil?
 
