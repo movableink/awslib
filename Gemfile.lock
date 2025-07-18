@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    MovableInkAWS (2.9.5)
+    MovableInkAWS (2.11.0)
       aws-sdk-athena (~> 1)
       aws-sdk-autoscaling (~> 1)
       aws-sdk-cloudwatch (~> 1)
@@ -18,8 +18,7 @@ PATH
       aws-sdk-ssm (~> 1)
       aws-sigv4 (~> 1)
       diplomat (= 2.6.4)
-      faraday (~> 2.8.1)
-      faraday-net_http (~> 3.0.2)
+      faraday (~> 2)
       httparty (= 0.23.1)
 
 GEM
@@ -132,10 +131,8 @@ PLATFORMS
 
 DEPENDENCIES
   MovableInkAWS!
-  faraday (~> 2.8.1)
-  faraday-net_http (~> 3.0.2)
+  faraday (~> 2)
   httparty (~> 0.23.1)
-  multi_xml (~> 0.6.0)
   rspec (~> 3.6)
   webmock
 
