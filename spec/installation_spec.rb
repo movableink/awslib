@@ -57,7 +57,7 @@ describe 'Installation Tests' do
   describe 'MovableInkAWS gem installation' do
     it 'installs the gem successfully' do
       # Skip on CI as we want to avoid actual installation
-      skip "Skipping gem installation test in CI environment" if ENV['CI'] == 'true'
+      # skip "Skipping gem installation test in CI environment" if ENV['CI'] == 'true'
 
       gem_dir = File.join(tmp_dir, 'gems')
       FileUtils.mkdir_p(gem_dir)
