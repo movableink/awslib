@@ -10,7 +10,7 @@ module MovableInk
 
       def autoscaling_with_retries(region: my_region)
         @autoscaling_client_with_retries ||= {}
-        instance_credentials = Aws::InstanceProfileCredentials.new(retries: 5)
+        instance_credentials = Aws::InstanceProfileCredentials.new(retries: 5, disable_imds_v1: true)
         @autoscaling_client_with_retries[region] ||= Aws::AutoScaling::Client.new(region: region, credentials: instance_credentials)
       end
 
