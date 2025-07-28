@@ -8,6 +8,12 @@ module MovableInk
         @autoscaling_client[region] ||= Aws::AutoScaling::Client.new(region: region)
       end
 
+      def autoscaling_with_retries(region: my_region)
+        @autoscaling_client_with_retries ||= {}
+        instance_credentials = Aws::InstanceProfileCredentials.new(retries: 5, disable_imds_v1: true)
+        @autoscaling_client_with_retries[region] ||= Aws::AutoScaling::Client.new(region: region, credentials: instance_credentials)
+      end
+
       def mark_me_as_unhealthy
         run_with_backoff do
           autoscaling.set_instance_health({
@@ -75,6 +81,30 @@ module MovableInk
         else
           run_with_backoff do
             autoscaling.complete_lifecycle_action({
+              instance_id:             instance_id,
+              lifecycle_hook_name:     lifecycle_hook_name,
+              auto_scaling_group_name: auto_scaling_group_name,
+              lifecycle_action_result: 'CONTINUE'
+            })
+          end
+        end
+      end
+
+      def complete_lifecycle_action_with_retries(lifecycle_hook_name:, auto_scaling_group_name:, lifecycle_action_token: nil, instance_id: nil)
+        raise ArgumentError.new('lifecycle_action_token or instance_id required') if lifecycle_action_token.nil? && instance_id.nil?
+
+        if lifecycle_action_token
+          run_with_backoff do
+            autoscaling_with_retries.complete_lifecycle_action({
+              lifecycle_hook_name:     lifecycle_hook_name,
+              auto_scaling_group_name: auto_scaling_group_name,
+              lifecycle_action_token:  lifecycle_action_token,
+              lifecycle_action_result: 'CONTINUE'
+            })
+          end
+        else
+          run_with_backoff do
+            autoscaling_with_retries.complete_lifecycle_action({
               instance_id:             instance_id,
               lifecycle_hook_name:     lifecycle_hook_name,
               auto_scaling_group_name: auto_scaling_group_name,
