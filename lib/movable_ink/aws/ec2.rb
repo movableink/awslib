@@ -258,6 +258,15 @@ module MovableInk
         unassigned_elastic_ips.select { |address| address.tags.detect { |t| t.key == 'mi:roles' && t.value == role } }
       end
 
+      def assign_ip_address_with_retries(role:)
+        run_with_backoff do
+          ec2_with_retries.associate_address({
+            instance_id: instance_id,
+            allocation_id: available_elastic_ips(role: role).sample.allocation_id
+          })
+        end
+      end
+
       def assign_ip_address(role:)
         run_with_backoff do
           ec2.associate_address({
