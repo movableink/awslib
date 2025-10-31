@@ -9,6 +9,7 @@ require_relative 'aws/athena'
 require_relative 'aws/s3'
 require_relative 'aws/iam'
 require_relative 'aws/eks'
+require_relative 'aws/elb'
 require_relative 'aws/elasticache'
 require_relative 'aws/api_gateway'
 require_relative 'aws/lambda'
@@ -26,6 +27,7 @@ module MovableInk
     include Athena
     include S3
     include ElastiCache
+    include ELB
     include ApiGateway
     include EKS
     include IAM
@@ -96,7 +98,9 @@ module MovableInk
                MovableInk::AWS::Errors::NoEnvironmentTagError,
                Aws::IAM::Errors::LimitExceededException,
                Aws::IAM::Errors::RequestLimitExceeded,
-               Aws::IAM::Errors::Throttling
+               Aws::IAM::Errors::Throttling,
+               Aws::ElasticLoadBalancingV2::Errors::Throttling,
+               Aws::ElasticLoadBalancingV2::Errors::ThrottlingException
           sleep_time = (num+1)**2 + rand(10)
           if quiet
             (num >= tries - 1) ? notify_and_sleep(sleep_time, $!.class) : sleep(sleep_time)
