@@ -244,6 +244,23 @@ module MovableInk
         redis_instances.flatten.shuffle
       end
 
+      def describe_ip(public_ip:)
+        expected_errors = [
+          MovableInk::AWS::Errors::ExpectedError.new(Aws::EC2::Errors::InvalidAddressNotFound, [/Address \'#{public_ip}\' not found./])
+        ]
+        begin
+          run_with_backoff(expected_errors: expected_errors) do
+            response = ec2.describe_addresses({
+              public_ips: [public_ip]
+            })
+            raise MovableInk::AWS::Errors::ServiceError if response.length > 1
+            return response[0]
+          end
+        rescue MovableInk::AWS::Errors::ServiceError, Aws::EC2::Errors::InvalidAddressNotFound
+          return nil
+        end
+      end
+
       def elastic_ips
         @all_elastic_ips ||= run_with_backoff do
           ec2.describe_addresses.addresses
