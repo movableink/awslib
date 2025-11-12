@@ -250,7 +250,7 @@ module MovableInk
         ]
         begin
           run_with_backoff(expected_errors: expected_errors) do
-            response = ec2.describe_addresses({
+            response = ec2_with_retries.describe_addresses({
               public_ips: [public_ip]
             })
             raise MovableInk::AWS::Errors::ServiceError if response.length > 1
