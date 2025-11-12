@@ -692,6 +692,40 @@ describe MovableInk::AWS::EC2 do
 
         expect(aws.assign_ip_address(role: 'some_role').association_id).to eq('eipassoc-3')
       end
+
+      it "should assign an elastic IP with allow_reassociation flag" do
+        ec2.stub_responses(:describe_addresses, elastic_ip_data)
+        ec2.stub_responses(:associate_address, associate_address_data)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:instance_id).and_return('i-12345')
+        allow(aws).to receive(:ec2).and_return(ec2)
+
+        expect(aws.assign_ip_address(role: 'some_role', allow_reassociation: true).association_id).to eq('eipassoc-3')
+      end
+
+      it "should assign an elastic IP with retries and return response" do
+        ec2.stub_responses(:describe_addresses, elastic_ip_data)
+        ec2.stub_responses(:associate_address, associate_address_data)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:instance_id).and_return('i-12345')
+        allow(aws).to receive(:ec2).and_return(ec2)
+        allow(aws).to receive(:ec2_with_retries).and_return(ec2)
+
+        response = aws.assign_ip_address_with_retries(role: 'some_role')
+        expect(response.association_id).to eq('eipassoc-3')
+      end
+
+      it "should assign an elastic IP with retries and allow_reassociation flag" do
+        ec2.stub_responses(:describe_addresses, elastic_ip_data)
+        ec2.stub_responses(:associate_address, associate_address_data)
+        allow(aws).to receive(:my_region).and_return('us-east-1')
+        allow(aws).to receive(:instance_id).and_return('i-12345')
+        allow(aws).to receive(:ec2).and_return(ec2)
+        allow(aws).to receive(:ec2_with_retries).and_return(ec2)
+
+        response = aws.assign_ip_address_with_retries(role: 'some_role', allow_reassociation: true)
+        expect(response.association_id).to eq('eipassoc-3')
+      end
     end
 
     context 'elastic ips' do
