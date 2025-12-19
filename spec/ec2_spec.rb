@@ -418,6 +418,7 @@ describe MovableInk::AWS::EC2 do
               "Meta": {
                 "external-source": "kubernetes",
                 "external-k8s-ns": "default",
+                "external-k8s-topology-zone": "us-east-1a",
               }
             }
           }
@@ -484,7 +485,7 @@ describe MovableInk::AWS::EC2 do
          expect(roles_tag[:value]).to eq('kubernetes-service-name')
          expect(backend.instance_id).to eq(nil)
          expect(backend.private_ip_address).to eq('10.0.0.1')
-         expect(backend.private_ip_address).to eq('10.0.0.1')
+         expect(backend.placement[:availability_zone]).to eq('us-east-1a')
       end
     end
 

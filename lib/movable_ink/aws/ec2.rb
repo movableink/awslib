@@ -161,7 +161,7 @@ module MovableInk
               value: role
             }
           ],
-          placement: { availability_zone: nil }
+          placement: { availability_zone: endpoint.Service.dig('Meta', 'external-k8s-topology-zone') }
         })
       end
 
