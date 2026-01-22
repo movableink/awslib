@@ -136,7 +136,11 @@ module MovableInk
         # within MI configuration
         Diplomat::Health.service(role.gsub('_', '-'), consul_service_options).map { |endpoint|
           if endpoint.Node.dig('Meta', 'external-source') == 'kubernetes'
+            # Legacy catalog sync
             map_k8s_consul_endpoint(endpoint, role)
+          elsif endpoint.Service && endpoint.Service.dig('Meta', 'managed-by') == 'consul-k8s-endpoints-controller'
+            # Consul mesh with service mesh sidecar
+            map_k8s_consul_mesh_endpoint(endpoint, role)
           else
             map_ec2_consul_endpoint(endpoint)
           end
@@ -162,6 +166,40 @@ module MovableInk
             }
           ],
           placement: { availability_zone: endpoint.Service.dig('Meta', 'external-k8s-topology-zone') }
+        })
+      end
+
+      def map_k8s_consul_mesh_endpoint(endpoint, role)
+        OpenStruct.new ({
+          private_ip_address: endpoint.Service.dig('Address'),
+          instance_id: nil,
+          tags: [
+            {
+              key: 'Name',
+              value: endpoint.Service.dig('Meta', 'pod-name')
+            },
+            {
+              key: 'mi:roles',
+              value: role
+            },
+            {
+              key: 'mi:monitoring_roles',
+              value: role
+            },
+            {
+              key: 'k8s:namespace',
+              value: endpoint.Service.dig('Meta', 'k8s-namespace')
+            },
+            {
+              key: 'k8s:service',
+              value: endpoint.Service.dig('Meta', 'k8s-service-name')
+            },
+            {
+              key: 'k8s:pod-uid',
+              value: endpoint.Service.dig('Meta', 'pod-uid')
+            }
+          ],
+          placement: { availability_zone: endpoint.Service.dig('Locality', 'Zone') }
         })
       end
 

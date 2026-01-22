@@ -487,6 +487,99 @@ describe MovableInk::AWS::EC2 do
          expect(backend.private_ip_address).to eq('10.0.0.1')
          expect(backend.placement[:availability_zone]).to eq('us-east-1a')
       end
+
+      it "returns backends that are synced from consul mesh with service mesh sidecar" do
+        consul_mesh_service_instances = [
+          {
+            "Node": {
+              "ID": "",
+              "Node": "k8s-mesh-virtual-node",
+              "Address": "10.0.0.10",
+              "Datacenter": my_datacenter,
+              "TaggedAddresses": nil,
+              "Meta": {
+                "synthetic-node": "true"
+              },
+              "CreateIndex": 12345,
+              "ModifyIndex": 12345
+            },
+            "Service": {
+              "ID": "test-service-abc123-xyz-test-service",
+              "Service": "test-service",
+              "Tags": [],
+              "Address": "10.0.0.11",
+              "Meta": {
+                "k8s-namespace": "default",
+                "k8s-service-name": "test-service",
+                "managed-by": "consul-k8s-endpoints-controller",
+                "pod-name": "test-service-abc123-xyz",
+                "pod-uid": "00000000-0000-0000-0000-000000000000",
+                "synthetic-node": "true"
+              },
+              "Port": 8080,
+              "Weights": {
+                "Passing": 1,
+                "Warning": 1
+              },
+              "EnableTagOverride": false,
+              "Locality": {
+                "Region": "us-east-1",
+                "Zone": "us-east-1b"
+              },
+              "Proxy": {
+                "Mode": "",
+                "MeshGateway": {},
+                "Expose": {}
+              },
+              "Connect": {},
+              "PeerName": "",
+              "CreateIndex": 12345,
+              "ModifyIndex": 12345
+            },
+            "Checks": [
+              {
+                "Node": "k8s-mesh-virtual-node",
+                "CheckID": "default/test-service-abc123-xyz-test-service",
+                "Name": "Kubernetes Readiness Check",
+                "Status": "passing",
+                "Notes": "",
+                "Output": "Kubernetes health checks passing",
+                "ServiceID": "test-service-abc123-xyz-test-service",
+                "ServiceName": "test-service",
+                "ServiceTags": [],
+                "Type": "kubernetes-readiness",
+                "Interval": "",
+                "Timeout": "",
+                "ExposedPort": 0,
+                "Definition": {},
+                "CreateIndex": 12345,
+                "ModifyIndex": 12345
+              }
+            ]
+          }
+        ]
+
+        json = JSON.generate(consul_mesh_service_instances)
+        stub_request(:get, "https://localhost:8501/v1/health/service/test-service?cached=true&dc=#{my_datacenter}&passing=true&stale=true")
+          .to_return(status: 200, body: json, headers: {})
+
+         resp_instances = aws.instances(role: 'test-service', discovery_type: 'consul')
+         backend = resp_instances.first
+         name_tag = backend.tags.find {|t| t[:key] == 'Name' }
+         roles_tag = backend.tags.find {|t| t[:key] == 'mi:roles' }
+         k8s_namespace_tag = backend.tags.find {|t| t[:key] == 'k8s:namespace' }
+         k8s_service_tag = backend.tags.find {|t| t[:key] == 'k8s:service' }
+         k8s_pod_uid_tag = backend.tags.find {|t| t[:key] == 'k8s:pod-uid' }
+
+         expect(name_tag[:value]).to eq('test-service-abc123-xyz')
+         expect(roles_tag[:value]).to eq('test-service')
+         expect(k8s_namespace_tag[:value]).to eq('default')
+         expect(k8s_service_tag[:value]).to eq('test-service')
+         expect(k8s_pod_uid_tag[:value]).to eq('00000000-0000-0000-0000-000000000000')
+         expect(backend.instance_id).to eq(nil)
+         expect(backend.private_ip_address).to eq('10.0.0.11')
+         expect(backend.placement[:availability_zone]).to eq('us-east-1b')
+      end
     end
 
     context "ordered roles" do
