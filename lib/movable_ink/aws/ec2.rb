@@ -309,27 +309,31 @@ module MovableInk
         @unassigned_elastic_ips ||= elastic_ips.select { |address| address.association_id.nil? }
       end
 
-      def available_elastic_ips(role:)
-        unassigned_elastic_ips.select { |address| address.tags.detect { |t| t.key == 'mi:roles' && t.value == role } }
+      def available_elastic_ips(role:, eip_pool: nil)
+        if eip_pool
+          unassigned_elastic_ips.select { |address| address.tags.detect { |t| t.key == 'mi:eip-pool' && t.value == eip_pool } }
+        else
+          unassigned_elastic_ips.select { |address| address.tags.detect { |t| t.key == 'mi:roles' && t.value == role } }
+        end
       end
 
-      def assign_ip_address_with_retries(role:, allow_reassociation: false)
+      def assign_ip_address_with_retries(role:, eip_pool: nil, allow_reassociation: false)
         response = nil
         run_with_backoff do
           response = ec2_with_retries.associate_address({
             instance_id: instance_id,
-            allocation_id: available_elastic_ips(role: role).sample.allocation_id,
+            allocation_id: available_elastic_ips(role: role, eip_pool: eip_pool).sample.allocation_id,
             allow_reassociation: allow_reassociation
           })
         end
         response
       end
 
-      def assign_ip_address(role:, allow_reassociation: false)
+      def assign_ip_address(role:, eip_pool: nil, allow_reassociation: false)
         run_with_backoff do
           ec2.associate_address({
             instance_id: instance_id,
-            allocation_id: available_elastic_ips(role: role).sample.allocation_id,
+            allocation_id: available_elastic_ips(role: role, eip_pool: eip_pool).sample.allocation_id,
             allow_reassociation: allow_reassociation
           })
         end
