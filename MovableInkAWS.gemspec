@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'aws-sdk-sns', '~> 1'
   s.add_runtime_dependency 'aws-sdk-ssm', '~> 1'
   s.add_runtime_dependency 'aws-sigv4', '~> 1'
+  s.add_runtime_dependency 'ostruct'
   s.add_runtime_dependency 'httparty',  '0.23.1'
   s.add_runtime_dependency 'diplomat',  '2.6.4'
 
