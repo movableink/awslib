@@ -1,0 +1,29 @@
+lib/movable_ink/aws/ec2.rb
+  s_185a75ca2fd3d5::t_2078fa09130c39 315,317
+  s_185a75ca2fd3d5::t_5b856ae67797d6 312-314,316,320,325,332,336
+.github/workflows/test.yaml
+  h_379e4357f987d8 16,19,22,38,41
+lib/movable_ink/version.rb
+  h_379e4357f987d8 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "154c2c0aa8b9631c496513d02c2647636c514328",
+  "prompts": {},
+  "humans": {
+    "h_379e4357f987d8": {
+      "author": "Duncan Schulze <13733349+duncaan@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_185a75ca2fd3d5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2950c9f-2657-4c83-ad66-920baaf1d8ac",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Duncan Schulze <13733349+duncaan@users.noreply.github.com>"
+    }
+  }
+}
