@@ -1,0 +1,21 @@
+MovableInkAWS.gemspec
+  s_fba9484ec19418::t_4d8f2942843af2 29
+Gemfile.lock
+  ai_agent 23,109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "271cb8516e543a41e405dcbed4223b119ff335bf",
+  "prompts": {},
+  "sessions": {
+    "s_fba9484ec19418": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c6e622e4-6213-4628-809b-5ff51824f4ec",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Duncan Schulze <13733349+duncaan@users.noreply.github.com>"
+    }
+  }
+}
